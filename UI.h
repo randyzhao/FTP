@@ -10,6 +10,8 @@
 
 #include <string>
 #include "command.h"
+#include <sys/socket.h>
+#include <netdb.h>
 using namespace std;
 
 //user-interface
@@ -17,7 +19,6 @@ class UI{
 private:
 	bool isConnected;
 	int sockfd;
-	struct addrinfo serverAddr;
 	int handleGetCmd(Command getCmd);
 	int handleOpenCmd(Command openCmd);
 	int handleDirCmd(Command dirCmd);

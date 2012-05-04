@@ -48,7 +48,8 @@ int UserDTP::getFile(int size, string localPath)
 	if (totalSize == size){
 		//file receive successfully
 		printf("get file successfully\n");
-		ofstream fout(localPath);
+		ofstream fout;
+		fout.open(localPath.c_str());
 		if (fout.write(file, size)){
 			printf("write file %s successfully\n", localPath.c_str());
 		}else{

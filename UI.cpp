@@ -47,18 +47,6 @@ int UI::handleOpenCmd(Command openCmd){
 
 int UI::initConnection(string addr, int port){
 	struct sockaddr_in servaddr;
-	//TODO:not supported IPV6 yet
-//	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-//	memset(&servaddr, 0, sizeof(servaddr));
-//	servaddr.sin_family = AF_INET;
-//	servaddr.sin_port = htons(port);
-//	if (inet_pton(AF_INET, addr.c_str(), &servaddr.sin_addr) == -1){
-//		printf("%s is not a valid address\n", addr.c_str());
-//	}
-//	if (-1 == connect(sockfd, (struct sockaddr*)&servaddr, sizeof(struct sockaddr))){
-//		printf("connection failed\n");
-//		return 1;
-//	}
 	struct addrinfo hints, *res, *res0;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
@@ -95,7 +83,6 @@ int UI::initConnection(string addr, int port){
 	}
 	if (s != -1){
 		this->sockfd = s;
-		this->serverAddr = res;
 		return 0;
 	}else{
 		return 1;

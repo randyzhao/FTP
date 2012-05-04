@@ -8,6 +8,7 @@
 #include "commandParser.h"
 #include "command.h"
 #include "boost/algorithm/string.hpp"
+#include <stdio.h>
 #include <vector>
 
 using namespace std;
