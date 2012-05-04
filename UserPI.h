@@ -1,4 +1,3 @@
-
 /*
  * UserPI.h
  *
@@ -26,13 +25,16 @@ private:
 	UserDTP dtp;
 	int listenTransferConnection();
 	int acceptTransferConnection();
-	//send content using telnet protocol
-	int telnetSend(string content);
 public:
 	//retrive file from remote
 	int do_retr(string localPath, string remotePath);
 	int do_list(string remotePath);
 	void setTelnetSockfd(int telnetSockfd);
+	//read message using telnet and store to the buffer
+	//return the length of the message
+	int telnetRead(char* buffer, int size);
+	//send content using telnet protocol
+	int telnetSend(string content);
 	UserPI();
 };
 

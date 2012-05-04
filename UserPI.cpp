@@ -17,7 +17,9 @@
 
 #define TRANSFORM_PORT 11122
 #define MAX_SOCK 10
-#define MAX_LIST_SIZE 100000
+#define MAX_LIST_LEN 100000
+#define MAX_TELNET_REPLY 100000
+#define MAX_TELNET_READ_TIME 1
 
 int UserPI::do_retr(string localPath, string remotePath) {
 	//TODO: port command is not well supported yet
@@ -71,7 +73,7 @@ int UserPI::acceptTransferConnection() {
 
 int UserPI::do_list(string remotePath) {
 	this->listenTransferConnection();
-	char buffer[MAX_LIST_SIZE];
+	char buffer[MAX_LIST_LEN];
 	this->telnetSend("PORT 127,0,0,1,43,256\r\n");
 	this->acceptTransferConnection();
 	this->dtp.setSockfd(this->transferSockfd);
@@ -95,6 +97,28 @@ int UserPI::telnetSend(string content) {
 		return 1;
 	}
 	return 0;
+}
+
+int UserPI::telnetRead(char *buffer, int size)
+{
+	char tempBuffer[MAX_TELNET_REPLY];
+	memset(tempBuffer, 0, sizeof(tempBuffer));
+	int totalLen = 0;
+	int currentLen;
+	struct timeval tv;
+	tv.tv_sec = MAX_TELNET_READ_TIME;
+	setsockopt(this->telnetSockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	while ((currentLen = recvfrom(this->telnetSockfd, buffer, size, 0, NULL, NULL)) > 0){
+		if (currentLen + totalLen < size){
+			strncpy(buffer + totalLen, tempBuffer, currentLen);
+		}else{
+			break;
+		}
+		totalLen += currentLen;
+		printf("current buffer : %s\n", buffer);
+		memset(tempBuffer, 0, sizeof(tempBuffer));
+	}
+	return totalLen;
 }
 
 UserPI::UserPI() {

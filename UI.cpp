@@ -23,6 +23,8 @@
 #include "commandParser.h"
 #include "helpers.h"
 
+#define MAX_TELNET_REPLY 100000
+
 using namespace std;
 
 
@@ -103,9 +105,14 @@ int UI::handleDirCmd(Command dirCmd)
 
 void UI::run()
 {
+	char reply[MAX_TELNET_REPLY];
 	while (true){
+		memset(reply, 0, sizeof(reply));
+		if (this->userPI.telnetRead(reply, MAX_TELNET_REPLY) > 0){
+			printf("%s\n", reply);
+		}
 		string cmdInput;
-
+		printf("ftp > ");
 		getline(cin, cmdInput);
 		Command cmd = CommandParser::parseCommand(cmdInput);
 		if (cmd.getType() == CommandType_Exit){
@@ -120,9 +127,11 @@ void UI::run()
 			handleOpenCmd(cmd);
 			break;
 		case CommandType_Dir:
-
+			handleDirCmd(cmd);
+			break;
 		default:
-			printf("commnd %s is not supported yet\n", cmdInput.c_str());
+			//printf("commnd %s is not supported yet\n", cmdInput.c_str());
+			this->userPI.telnetSend(cmdInput);
 			break;
 		}
 	}
