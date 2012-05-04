@@ -21,6 +21,7 @@
 
 #include "command.h"
 #include "commandParser.h"
+#include "helpers.h"
 
 using namespace std;
 
@@ -46,12 +47,11 @@ int UI::handleOpenCmd(Command openCmd){
 }
 
 int UI::initConnection(string addr, int port){
-	struct sockaddr_in servaddr;
 	struct addrinfo hints, *res, *res0;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
-	int error = getaddrinfo(addr.c_str(), NULL, &hints, &res0);
+	int error = getaddrinfo(addr.c_str(), int2str(port).c_str(), &hints, &res0);
 	if (error){
 		printf("get addr %s error\n", addr.c_str());
 		return 1;
@@ -108,7 +108,10 @@ void UI::run()
 
 		switch (cmd.getType()){
 		case CommandType_Get:
-			//TODO;
+			handleGetCmd(cmd);
+			break;
+		case CommandType_Open:
+			handleOpenCmd(cmd);
 			break;
 		default:
 			printf("commnd %s is not supported yet\n", cmdInput.c_str());

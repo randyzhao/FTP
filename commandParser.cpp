@@ -13,6 +13,8 @@
 
 using namespace std;
 
+#define TELNET_PORT 21
+
 Command CommandParser::parseCommand(string com) {
 	//using boost to split the string
 	Command cmd;
@@ -44,9 +46,17 @@ Command CommandParser::parseCommand(string com) {
 			cmd.setType(CommandType_Open);
 			CommandParam serverAddrParam;
 			serverAddrParam.setType(ParamType_String);
-			serverAddrParam.setName("serverAddr");
+			serverAddrParam.setName("addr");
 			serverAddrParam.setStringValue(splitVec[1]);
 			cmd.addParam(serverAddrParam);
+
+			CommandParam portParam;
+			portParam.setType(ParamType_Int);
+			portParam.setName("port");
+			//TODO:support only default telnet port
+			portParam.setIntValue(TELNET_PORT);
+			cmd.addParam(portParam);
+
 		}
 	} else{
 		printf("command %s is not supported yet\n", splitVec[0].c_str());

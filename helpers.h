@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void string int2str(int value){
+string int2str(int value){
 	char t[256];
 	sprintf(t, "%d", value);
 	string s = t;
