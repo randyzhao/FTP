@@ -26,9 +26,10 @@ private:
 	int initTransferConnection();
 public:
 	//retrive file from remote
-	UserPI(int telnetSockfd);
 	int do_retr(string localPath, string remotePath);
 	int do_list(string remotePath);
+	void setTelnetSockfd(int telnetSockfd);
+	UserPI();
 };
 
 #endif /* USERPI_H_ */

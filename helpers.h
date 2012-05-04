@@ -7,18 +7,11 @@
 
 #ifndef HELPERS_H_
 #define HELPERS_H_
-
-#include <iostream>
+#include <stdio.h>
 #include <string>
-
 using namespace std;
 
-string int2str(int value){
-	char t[256];
-	sprintf(t, "%d", value);
-	string s = t;
-	return s;
-}
+extern string int2str(int value);
 
 
 #endif /* HELPERS_H_ */

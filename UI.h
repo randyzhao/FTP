@@ -12,6 +12,8 @@
 #include "command.h"
 #include <sys/socket.h>
 #include <netdb.h>
+
+#include "UserPI.h"
 using namespace std;
 
 //user-interface
@@ -19,6 +21,8 @@ class UI{
 private:
 	bool isConnected;
 	int sockfd;
+	UserPI userPI;
+
 	int handleGetCmd(Command getCmd);
 	int handleOpenCmd(Command openCmd);
 	int handleDirCmd(Command dirCmd);

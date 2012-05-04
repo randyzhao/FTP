@@ -29,6 +29,8 @@ using namespace std;
 int UI::handleGetCmd(Command getCmd)
 {
 	assert(getCmd.getType() == CommandType_Get);
+	this->userPI.do_retr(getCmd.getParam("localPath").getStringValue(),
+			getCmd.getParam("remotePath").getStringValue());
 	return 0;
 	//TODO;
 }
@@ -45,6 +47,8 @@ int UI::handleOpenCmd(Command openCmd){
 	return 0;
 	//TODO:
 }
+
+extern string int2str(int value);
 
 int UI::initConnection(string addr, int port){
 	struct addrinfo hints, *res, *res0;
@@ -83,6 +87,7 @@ int UI::initConnection(string addr, int port){
 	}
 	if (s != -1){
 		this->sockfd = s;
+		userPI.setTelnetSockfd(s);
 		return 0;
 	}else{
 		return 1;

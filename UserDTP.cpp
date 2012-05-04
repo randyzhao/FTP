@@ -19,8 +19,9 @@ using namespace std;
 #define RECEVIE_TIME_LIMIT 20
 
 
-int UserDTP::getFile(int size, string localPath)
+int UserDTP::getFile(string localPath)
 {
+	int size = RECV_BUFFER_LEN;
 	char* file = new char[size + 10];
 	memset(file, 0, sizeof(file));
 	int totalSize = 0;
@@ -44,6 +45,9 @@ int UserDTP::getFile(int size, string localPath)
 		recvbuf[recvLen] = 0;
 		char* filePtr = file + totalSize;
 		strncpy(filePtr, recvbuf, recvLen);
+		if (recvLen > sizeof(int)){
+			size = *(int*)file;
+		}
 	}
 	if (totalSize == size){
 		//file receive successfully

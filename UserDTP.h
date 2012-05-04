@@ -17,7 +17,7 @@ class UserDTP{
 private:
 	int sockfd;
 public:
-	int getFile(int size, string localPath);
+	int getFile(string localPath);
 	void setSockfd(int sockfd);
 };
 
