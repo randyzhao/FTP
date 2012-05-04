@@ -15,19 +15,23 @@
 #include "UserPI.h"
 #include "helpers.h"
 
-#define TRANSFORM_PORT 20
+#define TRANSFORM_PORT 11122
 #define MAX_SOCK 10
+#define MAX_LIST_SIZE 100000
 
 int UserPI::do_retr(string localPath, string remotePath) {
-	if (this->transferSockfd == -1) { //transfer socket is not init yet
-		this->initTransferConnection();
-	}
+	//TODO: port command is not well supported yet
+	this->listenTransferConnection();
+	//IP addr : 127.0.0.1
+	//port : 11122
+	this->telnetSend("PORT 127,0,0,1,43,256\r\n");
+	this->acceptTransferConnection();
+	this->dtp.setSockfd(this->transferSockfd);
 	this->dtp.getFile(localPath);
-	//TODO;
 	return 0;
 }
 
-int UserPI::initTransferConnection() {
+int UserPI::listenTransferConnection() {
 //	//TODO:only support IPV4 yet
 //	struct addrinfo hints, *res, *res0;
 //	int error;
@@ -42,30 +46,55 @@ int UserPI::initTransferConnection() {
 //	int smax = 0;
 //	int sockmax = -1;
 //	for (res = res0; res && smax < MAXSO)
-	int listenfd, connfd;
-	struct sockaddr_in userAddr, serverAddr;
-	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	struct sockaddr_in userAddr;
+	this->transferListenSockfd = socket(AF_INET, SOCK_STREAM, 0);
 	memset(&userAddr, 0, sizeof(userAddr));
 	userAddr.sin_family = AF_INET;
 	userAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	userAddr.sin_port = htons(TRANSFORM_PORT);
-	bind(listenfd, (struct sockaddr*) &userAddr, sizeof(userAddr));
-	listen(listenfd, 100);
+	bind(this->transferListenSockfd, (struct sockaddr*) &userAddr,
+			sizeof(userAddr));
+	listen(this->transferListenSockfd, 100);
+	return 0;
+}
+
+int UserPI::acceptTransferConnection() {
 	socklen_t servlen;
 	servlen = sizeof(serverAddr);
-	connfd = accept(listenfd, (struct sockaddr*)&serverAddr, &servlen);
+	int connfd = accept(this->transferListenSockfd,
+			(struct sockaddr*) &serverAddr, &servlen);
+	//TODO:valid code here
 	this->transferSockfd = connfd;
-	//TODO:
+	close(this->transferListenSockfd);
 	return 0;
 }
 
 int UserPI::do_list(string remotePath) {
-	//TODO:
+	this->listenTransferConnection();
+	char buffer[MAX_LIST_SIZE];
+	this->telnetSend("PORT 127,0,0,1,43,256\r\n");
+	this->acceptTransferConnection();
+	this->dtp.setSockfd(this->transferSockfd);
+	memset(buffer, 0, sizeof(buffer));
+	int len = this->dtp.getFile(buffer);
+	if (len > 0) {
+		printf("%s\n", buffer);
+	} else {
+		printf("get list error\n");
+	}
 	return 0;
 }
 
 void UserPI::setTelnetSockfd(int telnetSockfd) {
 	this->telnetSockfd = telnetSockfd;
+}
+
+int UserPI::telnetSend(string content) {
+	if (write(this->telnetSockfd, content.c_str(), content.length())) {
+		printf("telnet send error\n");
+		return 1;
+	}
+	return 0;
 }
 
 UserPI::UserPI() {

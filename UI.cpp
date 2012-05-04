@@ -96,6 +96,7 @@ int UI::initConnection(string addr, int port){
 
 int UI::handleDirCmd(Command dirCmd)
 {
+	this->userPI.do_list("test");
 	//TODO:
 	return 0;
 }
@@ -118,6 +119,8 @@ void UI::run()
 		case CommandType_Open:
 			handleOpenCmd(cmd);
 			break;
+		case CommandType_Dir:
+
 		default:
 			printf("commnd %s is not supported yet\n", cmdInput.c_str());
 			break;

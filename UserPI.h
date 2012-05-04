@@ -20,10 +20,14 @@ class UserPI {
 private:
 	int telnetSockfd;
 	int transferSockfd;
+	int transferListenSockfd;
 	//this is the read address of server
 	addrinfo serverAddr;
 	UserDTP dtp;
-	int initTransferConnection();
+	int listenTransferConnection();
+	int acceptTransferConnection();
+	//send content using telnet protocol
+	int telnetSend(string content);
 public:
 	//retrive file from remote
 	int do_retr(string localPath, string remotePath);

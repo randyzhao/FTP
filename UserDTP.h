@@ -17,7 +17,11 @@ class UserDTP{
 private:
 	int sockfd;
 public:
+	//store the file to a local file
 	int getFile(string localPath);
+	//store the file to a buffer, this can be used in list command
+	//return value is the real size of the file
+	int getFile(char* buffer);
 	void setSockfd(int sockfd);
 };
 
