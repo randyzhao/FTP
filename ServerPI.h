@@ -31,7 +31,12 @@ private:
 	int do_pass();
 	int do_pasv();
 	int do_list();
+	int do_syst();
 	//execute dir command and return the result in string
+
+	//request dispatcher
+	//called whenever read a request from telnet
+	void requestDispacher(string cmd);
 	string dir();
 	//begin to listen to a free port to wait for the user
 	//return 0 when successfully

@@ -173,7 +173,10 @@ int UserPI::do_pasv() {
 	this->telnetSend("EPSV");
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));
-	int len = this->telnetRead(buffer, MAX_TELNET_REPLY);
+	int len;
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0){
+		//keep read from telnet
+	}
 	int count = 0;
 	int temp = 1;
 	printf("get pasv reply %s\n", buffer);

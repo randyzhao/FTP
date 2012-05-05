@@ -15,10 +15,14 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
-
+#include <boost/algorithm/string.hpp>
+#include <vector>
 #define MAX_TELNET_REPLY 100000
 #define MAX_TELNET_READ_TIME_US 200000
 #define PENDING_CONNECTION_QUEUE_LEN 10
+
+
+using namespace std;
 
 int ServerPI::do_user() {
 	this->telnetSend("331 Please specify the password\n");
@@ -101,9 +105,18 @@ int ServerPI::listenTransferPort() {
 		printf("listen error\n");
 		return -1;
 	}
-	printf("listen to transfer connection on port %d\n", ntohs(sin6.sin6_port));
+	//now get port
+	struct sockaddr_in6 sa;
+	memset(&sa, 0, sizeof(sa));
+	socklen_t salen = sizeof(sa);
+	if (getsockname(s0, (struct sockaddr*)&sa, &salen) == -1){
+		printf("getsockname error\n");
+		return -1;
+	}
+	int port = ntohs(sa.sin6_port);
+	printf("listen to transfer connection on port %d\n", port);
 	this->transferListenSockfd = s0;
-	this->transferListenPort = ntohs(sin6.sin6_port);
+	this->transferListenPort = port;
 	return 0;
 }
 
@@ -179,7 +192,55 @@ void ServerPI::begin() {
 	}
 }
 
+void ServerPI::requestDispacher(string cmd)
+{
+	vector<string> splitVec;
+	boost::split(splitVec, cmd, boost::algorithm::is_space(),
+			boost::algorithm::token_compress_on);
+	string type = splitVec[0];
+	if (type == "USER"){
+		this->do_user();
+	}else if (type == "PASS"){
+		this->do_pass();
+	}else if (type == "EPSV"){//TODO: only support ipv6. Should support PASV also
+		this->do_pasv();
+	}else if (type == "LIST"){
+		this->do_list();
+	}else if (type == "SYST"){
+		this->do_syst();
+	}else{
+		//TODO:
+	}
+
+}
+
+int ServerPI::do_syst()
+{
+	string cmd = "uname -a";
+	char buf[MAX_TELNET_REPLY];
+	memset(buf, 0, sizeof(buf));
+	FILE* re = popen(cmd.c_str(), "r");
+	long maxl = MAX_TELNET_REPLY;
+	fread(buf, 1, maxl, re);
+	string sysinfo = buf;
+	string content = "215 " + sysinfo;
+	this->telnetSend(content);
+	return 0;
+}
+
 void ServerPI::run() {
 	printf("ServerPI : run\n");
+	this->telnetSend("220 Randy's FTP alpha 1.0\n");
+	char buf[MAX_TELNET_REPLY];
+	memset(buf, 0, sizeof(buf));
+	for(;;){
+		int len = this->telnetRead(buf, MAX_TELNET_REPLY);
+		if (len == 0){
+			continue;
+		}
+		string cmd = buf;
+		printf("recv request : %s\n", buf);
+		this->requestDispacher(cmd);
+	}
 }
 
