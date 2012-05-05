@@ -13,7 +13,7 @@
 using namespace std;
 
 //user date transfer
-class DTP{
+class DTP {
 private:
 	int sockfd;
 public:
@@ -25,7 +25,7 @@ public:
 	void setSockfd(int sockfd);
 	//send a msg
 	void sendMsg(string content);
+	int sendFile(string path);
 };
-
 
 #endif /* USERDTP_H_ */

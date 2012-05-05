@@ -17,12 +17,13 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <boost/algorithm/string.hpp>
 #include <vector>
 #define MAX_TELNET_REPLY 100000
 #define MAX_TELNET_READ_TIME_US 200000
 #define PENDING_CONNECTION_QUEUE_LEN 10
-
+#define MAX_FILE_SIZE 10000000
 
 using namespace std;
 
@@ -217,8 +218,10 @@ void ServerPI::requestDispacher(string cmd)
 		this->do_list();
 	}else if (type == "SYST"){
 		this->do_syst();
+	}else if (type == "RETR"){
+		this->do_retr(splitVec[1]);
 	}else{
-		//TODO:
+		printf("not supported yet");
 	}
 
 }
@@ -237,6 +240,14 @@ int ServerPI::do_syst()
 	return 0;
 }
 
+int ServerPI::do_retr(string path)
+{
+	//TODO: not valid existence
+	this->acceptTransferPort();
+	dtp.sendFile(path);
+	close(this->transferSockfd);
+	dtp.setSockfd(-1);
+}
 void ServerPI::run() {
 	printf("ServerPI : run\n");
 	this->telnetSend("220 Randy's FTP alpha 1.0\n");

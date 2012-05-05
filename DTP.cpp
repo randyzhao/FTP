@@ -8,6 +8,7 @@
 #include "DTP.h"
 #include <iostream>
 #include <fstream>
+#include <fcntl.h>
 #include <stdio.h>
 #include <cstring>
 #include<sys/types.h>
@@ -17,7 +18,7 @@ using namespace std;
 
 #define RECV_BUFFER_LEN 10000
 #define RECEVIE_TIME_LIMIT 20
-
+#define MAX_FILE_SIZE 1000000
 int DTP::getFile(string localPath) {
 	char* file = new char[RECV_BUFFER_LEN];
 	int len;
@@ -94,4 +95,24 @@ void DTP::sendMsg(string content) {
 		printf("send msg length = %d, content:\n %s\n", len, content.c_str());
 	}
 }
+
+int DTP::sendFile(string path)
+{
+	int fd = open(path.c_str(), O_RDONLY);
+	char* buf = new char[MAX_FILE_SIZE];
+	memset(buf, 0, sizeof(buf));
+	int size = read(fd, buf, MAX_FILE_SIZE);
+	if (size <= 0){
+		printf("send file %s error: %s\n", path.c_str(), strerror(errno));
+		return 1;
+	}
+	int len = write(this->sockfd, buf, size);
+	if (len < 0) {
+		printf("socket error: %s\n", strerror(errno));
+	} else {
+		printf("send file %s successfully\n", path.c_str());
+	}
+}
+
+
 
