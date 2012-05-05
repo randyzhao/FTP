@@ -9,7 +9,8 @@
 #define SERVERPI_H_
 
 class ServerPI{
-
+public:
+	void run();
 };
 
 

@@ -6,6 +6,7 @@
  */
 
 #include "Server.h"
+#include "ServerPI.h"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -13,7 +14,8 @@
 #include <cstring>
 #include <errno.h>
 #include <stdio.h>
-
+#include <boost/thread/thread.hpp>
+#include <boost/bind.hpp>
 using namespace std;
 
 #define IPV6_LISTEN_PORT 21
@@ -31,7 +33,9 @@ void Server::run() {
 		printf("init socket error : %s\n", strerror(errno));
 		return;
 	}
-	setsockopt(s0, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	if (setsockopt(s0, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))){
+		printf("setsockopt error : %s\n", strerror(errno));
+	}
 	if (bind(s0, (const struct sockaddr*) &sin6, sizeof(sin6))) {
 		printf("bind error : %s\n", strerror(errno));
 		return;
@@ -53,8 +57,11 @@ void Server::run() {
 		} else {
 			getnameinfo((struct sockaddr*) &sin6_accept, sin6_len, hbuf,
 					sizeof(hbuf), NULL, 0, NI_NUMERICHOST);
-			printf("accept a connection from %s\n", hbuf);
-			//TODO: further operation
+			printf("accepPt a connection from %s\n", hbuf);
+			ServerPI pi;
+			boost::thread thrd(boost::bind(&ServerPI::run, &pi));
+			thrd.join();
+					//TODO: further operation
 		}
 
 	}

@@ -7,5 +7,13 @@
 
 
 #include "ServerPI.h"
+#include <stdio.h>
 
+
+
+
+void ServerPI::run()
+{
+	printf("ServerPI : run\n");
+}
 
