@@ -59,7 +59,7 @@ void Server::run() {
 					sizeof(hbuf), NULL, 0, NI_NUMERICHOST);
 			printf("accepPt a connection from %s\n", hbuf);
 			ServerPI pi;
-			boost::thread thrd(boost::bind(&ServerPI::run, &pi));
+			boost::thread thrd(boost::bind(&ServerPI::run, &pi, s));
 			thrd.join();
 					//TODO: further operation
 		}
