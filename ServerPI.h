@@ -7,12 +7,16 @@
 
 #ifndef SERVERPI_H_
 #define SERVERPI_H_
-
 #include <string>
+#include <boost/thread/mutex.hpp>
 using namespace std;
 
 class ServerPI{
 private:
+	boost::mutex* listenMutex;
+
+	//the socket while in begin()
+	int listenSockfd;
 	int telnetSockfd;
 	int transferSockfd;
 	int transferListenSockfd;
@@ -34,7 +38,10 @@ private:
 	int listenTransferPort();
 	int acceptTransferPort();
 public:
-	void run(int telnetSockfd);
+	ServerPI(int listenSockfd, boost::mutex* listenMutex);
+	//init and try to accept a client
+	void begin();
+	void run();
 };
 
 

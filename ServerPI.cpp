@@ -5,7 +5,6 @@
  *      Author: randy
  */
 
-
 #include "ServerPI.h"
 #include <string.h>
 #include <sys/stat.h>
@@ -21,26 +20,24 @@
 #define MAX_TELNET_READ_TIME_US 200000
 #define PENDING_CONNECTION_QUEUE_LEN 10
 
-int ServerPI::do_user()
-{
+int ServerPI::do_user() {
 	this->telnetSend("331 Please specify the password\n");
 	return 0;
 }
 
-int ServerPI::do_pass()
-{
+int ServerPI::do_pass() {
 	this->telnetSend("230 Login successfully");
 	return 0;
 }
 
-int ServerPI::do_pasv()
-{
+int ServerPI::do_pasv() {
 	//TODO: not valid
 	this->listenTransferPort();
 	char buf[MAX_TELNET_READ_TIME_US];
 	memset(&buf, 0, sizeof(buf));
 	//TODO: address is not supported
-	sprintf(buf, "229 Entering extended passive mode (|||%d|).", this->transferListenPort);
+	sprintf(buf, "229 Entering extended passive mode (|||%d|).",
+			this->transferListenPort);
 	string content = buf;
 	this->telnetSend(content);
 	//TODO:
@@ -81,20 +78,19 @@ int ServerPI::telnetRead(char *buffer, int size) {
 	return totalLen;
 }
 
-int ServerPI::listenTransferPort()
-{
+int ServerPI::listenTransferPort() {
 	//TODO:
 	struct sockaddr_in6 sin6;
 	memset(&sin6, 0, sizeof(sin6));
 	sin6.sin6_family = AF_INET6;
 	sin6.sin6_port = htons(0);
 	int s0 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (s0 == -1){
+	if (s0 == -1) {
 		printf("init transfer socket error : %s\n", strerror(errno));
 		return -1;
 	}
 	int on = 1;
-	if (setsockopt(s0, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))){
+	if (setsockopt(s0, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
 		printf("setsockopt error : %s\n", strerror(errno));
 	}
 	if (bind(s0, (const struct sockaddr*) &sin6, sizeof(sin6))) {
@@ -111,17 +107,16 @@ int ServerPI::listenTransferPort()
 	return 0;
 }
 
-int ServerPI::acceptTransferPort()
-{
+int ServerPI::acceptTransferPort() {
 	int s0 = this->transferListenSockfd;
 	struct sockaddr_in6 sin6_accept;
 	socklen_t sin6_len;
 	char hbuf[NI_MAXHOST];
 	memset(&hbuf, 0, sizeof(hbuf));
 	//TODO: not valid user's address. It may not come from the user
-	int s = accept(s0, (struct sockaddr*)&sin6_accept, &sin6_len);
-	getnameinfo((struct sockaddr*)&sin6_accept, sin6_len, hbuf,
-			sizeof(hbuf), NULL, 0, NI_NUMERICHOST);
+	int s = accept(s0, (struct sockaddr*) &sin6_accept, &sin6_len);
+	getnameinfo((struct sockaddr*) &sin6_accept, sin6_len, hbuf, sizeof(hbuf),
+			NULL, 0, NI_NUMERICHOST);
 	printf("transfer connection ok\n");
 	close(this->transferListenSockfd);
 	this->transferListenSockfd = -1;
@@ -129,18 +124,17 @@ int ServerPI::acceptTransferPort()
 	return 0;
 }
 
-int ServerPI::do_list()
-{
+int ServerPI::do_list() {
 	//TODO: not valid if PASV mode
 	//TODO: not valid accept result
 	this->acceptTransferPort();
 	string content = this->dir();
 	this->telnetSend("150 Here comes the directory listing");
 	//TODO: dtp working
+	return 0;
 }
 
-string ServerPI::dir()
-{
+string ServerPI::dir() {
 	string cmd = "dir";
 	FILE* result = popen(cmd.c_str(), "r");
 	char buf[MAX_TELNET_REPLY];
@@ -151,9 +145,41 @@ string ServerPI::dir()
 	return r;
 }
 
-void ServerPI::run(int telnetSockfd)
-{
-	this->telnetSockfd = telnetSockfd;
+ServerPI::ServerPI(int listenSockfd, boost::mutex* listenMutex) {
+	this->listenMutex = listenMutex;
+	this->listenSockfd = listenSockfd;
+}
+
+void ServerPI::begin() {
+	char hbuf[NI_MAXHOST];
+	memset(hbuf, 0, sizeof(hbuf));
+	for (;;) { //thread should always be running
+
+		struct sockaddr_in6 sin6_accept;
+		socklen_t sin6_len = sizeof(sin6_accept);
+		int sock;
+		//try to accept
+		for (;;) {
+			boost::mutex::scoped_lock lock(*(this->listenMutex));
+			sock = accept(this->listenSockfd, (struct sockaddr*) &sin6_accept,
+					&sin6_len);
+			printf("accept a user\n");
+			if (sock == -1) {
+				printf("accept failed from %s\n", hbuf);
+			} else {
+				getnameinfo((struct sockaddr*) &sin6_accept, sin6_len, hbuf,
+						sizeof(hbuf), NULL, 0, NI_NUMERICHOST);
+				printf("accepPt a connection from %s\n", hbuf);
+				this->telnetSockfd = sock;
+				break;
+			}
+
+		}
+		this->run();
+	}
+}
+
+void ServerPI::run() {
 	printf("ServerPI : run\n");
 }
 
