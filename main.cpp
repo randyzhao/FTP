@@ -6,14 +6,16 @@
  */
 
 #include "UI.h"
+#include "Server.h"
 #include <stdio.h>
 
 int main(int argc, char** argv) {
 	char t = getopt(argc, argv, "sc");
 	UI ui;
+	Server ser;
 	switch (t) {
 	case 's':
-		//TODO: server
+		ser.run();
 		break;
 	case 'c':
 		//TODO:
