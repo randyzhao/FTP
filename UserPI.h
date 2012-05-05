@@ -24,8 +24,8 @@ private:
 	//this is the read address of server
 	UserDTP dtp;
 	string servAddr;
-	int listenTransferConnection();
-	int acceptTransferConnection();
+	//int listenTransferConnection();
+	//int acceptTransferConnection();
 
 public:
 	//PASV in ipv4 and EPSV in ipv6

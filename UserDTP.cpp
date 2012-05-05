@@ -8,6 +8,7 @@
 #include "UserDTP.h"
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
 #include <cstring>
 #include<sys/types.h>
 #include<sys/socket.h>
@@ -19,17 +20,30 @@ using namespace std;
 int UserDTP::getFile(string localPath) {
 	char* file = new char[RECV_BUFFER_LEN];
 	int len;
-	if ((len = getFile(file)) > 0) {
+	if ((len = getFile(file)) >= 0) {
 		//file receive successfully
 		printf("get file successfully\n");
 		ofstream fout;
-		fout.open(localPath.c_str());
-		if (fout.write(file, len)) {
-			printf("write file %s successfully\n", localPath.c_str());
+//		fout.open("./sample3");
+//		if (!fout.write(file, len)) {
+//			printf("write file %s successfully\n", localPath.c_str());
+//		} else {
+//			printf("write file %s error\n", localPath.c_str());
+//		}
+//		fout.close();
+		FILE* f;
+		f = fopen(localPath.c_str(), "w");
+		if (f == NULL) {
+			printf("open file %s error\n", localPath.c_str());
+			return 1;
 		} else {
-			printf("write file %s error\n", localPath.c_str());
+			if (fputs(file, f) == EOF) {
+				printf("write file %s error\n", localPath.c_str());
+			} else {
+				printf("write file %s successfully\n", localPath.c_str());
+			}
+			fclose(f);
 		}
-		fout.close();
 	} else {
 		printf("get file error\n");
 	}
@@ -44,12 +58,12 @@ int UserDTP::getFile(char *file) {
 	struct timeval tv;
 	tv.tv_sec = RECEVIE_TIME_LIMIT;
 	setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-	char* recvbuf = new char[RECV_BUFFER_LEN + 10];
-	while (true) { //not finish yet
+	char* recvbuf = new char[RECV_BUFFER_LEN + 10];while
+(	true) { //not finish yet
 		memset(recvbuf, 0, sizeof(recvbuf));
 		int recvLen;
 		if ((recvLen = recvfrom(sockfd, recvbuf, RECV_BUFFER_LEN, 0, NULL, NULL))
-				<= 0) {
+		<= 0) {
 			break;
 		}
 		//receive successful

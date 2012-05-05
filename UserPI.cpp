@@ -28,16 +28,14 @@ int UserPI::do_retr(string localPath, string remotePath) {
 	//TODO: port command is not well supported yet
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));
-	this->listenTransferConnection();
 	//IP addr : 127.0.0.1
 	//port : 11122
-	this->telnetSend("PORT 127,0,0,1,206,233");
+	this->do_pasv();
 	this->telnetRead(buffer, MAX_TELNET_REPLY);
 	printf("%s\n", buffer);
 	string content = "RETR ";
 	content = content + remotePath;
 	this->telnetSend(content);
-	this->acceptTransferConnection();
 	this->dtp.setSockfd(this->transferSockfd);
 	this->dtp.getFile(localPath);
 	this->telnetRead(buffer, MAX_TELNET_REPLY);
@@ -45,47 +43,47 @@ int UserPI::do_retr(string localPath, string remotePath) {
 	return 0;
 }
 
-int UserPI::listenTransferConnection() {
-//	//TODO:only support IPV4 yet
-//	struct addrinfo hints, *res, *res0;
-//	int error;
-//	memset(&hints, 0, sizeof(hints));
-//	hints.ai_socktype = SOCK_STREAM;
-//	hints.ai_flags = AI_PASSIVE;
-//	error = getaddrinfo(NULL, int2str(TRANSFORM_PORT).c_str(), &hints, &res0);
-//	if (error){
-//		printf("get addr localhost:%s error\n", int2str(TRANSFORM_PORT).c_str());
-//		return 1;
-//	}
-//	int smax = 0;
-//	int sockmax = -1;
-//	for (res = res0; res && smax < MAXSO)
-	struct sockaddr_in userAddr;
-	this->transferListenSockfd = socket(AF_INET, SOCK_STREAM, 0);
-	memset(&userAddr, 0, sizeof(userAddr));
-	userAddr.sin_family = AF_INET;
-	userAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	userAddr.sin_port = htons(TRANSFORM_PORT);
-	bind(this->transferListenSockfd, (struct sockaddr*) &userAddr,
-			sizeof(userAddr));
-	listen(this->transferListenSockfd, 100);
-	return 0;
-}
+//int UserPI::listenTransferConnection() {
+////	//TODO:only support IPV4 yet
+////	struct addrinfo hints, *res, *res0;
+////	int error;
+////	memset(&hints, 0, sizeof(hints));
+////	hints.ai_socktype = SOCK_STREAM;
+////	hints.ai_flags = AI_PASSIVE;
+////	error = getaddrinfo(NULL, int2str(TRANSFORM_PORT).c_str(), &hints, &res0);
+////	if (error){
+////		printf("get addr localhost:%s error\n", int2str(TRANSFORM_PORT).c_str());
+////		return 1;
+////	}
+////	int smax = 0;
+////	int sockmax = -1;
+////	for (res = res0; res && smax < MAXSO)
+//	struct sockaddr_in userAddr;
+//	this->transferListenSockfd = socket(AF_INET, SOCK_STREAM, 0);
+//	memset(&userAddr, 0, sizeof(userAddr));
+//	userAddr.sin_family = AF_INET;
+//	userAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+//	userAddr.sin_port = htons(TRANSFORM_PORT);
+//	bind(this->transferListenSockfd, (struct sockaddr*) &userAddr,
+//			sizeof(userAddr));
+//	listen(this->transferListenSockfd, 100);
+//	return 0;
+//}
 
-int UserPI::acceptTransferConnection() {
-	socklen_t servlen;
-	servlen = sizeof(serverAddr);
-	int connfd = -1;
-	while ((connfd = accept(this->transferListenSockfd,
-			(struct sockaddr*) &serverAddr, &servlen)) < 0) {
-		//do nothing
-	}
-	printf("accept transfer connection successfully\n");
-	//TODO:valid code here
-	this->transferSockfd = connfd;
-	close(this->transferListenSockfd);
-	return 0;
-}
+//int UserPI::acceptTransferConnection() {
+//	socklen_t servlen;
+//	servlen = sizeof(serverAddr);
+//	int connfd = -1;
+//	while ((connfd = accept(this->transferListenSockfd,
+//			(struct sockaddr*) &serverAddr, &servlen)) < 0) {
+//		//do nothing
+//	}
+//	printf("accept transfer connection successfully\n");
+//	//TODO:valid code here
+//	this->transferSockfd = connfd;
+//	close(this->transferListenSockfd);
+//	return 0;
+//}
 
 int UserPI::do_list(string remotePath) {
 	//this->listenTransferConnection();
@@ -227,10 +225,8 @@ int UserPI::do_pasv() {
 		break;
 	}
 	if (s != -1) {
-		struct sockaddr_storage servAddr;
-		memset(&servAddr, 0, sizeof(servAddr));
-		servAddr.ss_family = res->ai_family;
 		this->transferSockfd = s;
+		this->dtp.setSockfd(s);
 		return 0;
 	} else {
 		return 1;
