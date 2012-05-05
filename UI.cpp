@@ -45,14 +45,34 @@ int UI::handleOpenCmd(Command openCmd){
 		printf("Could not connect to %s:%d\n", addr.c_str(), port);
 		return -1;
 	}
+	char buffer[MAX_TELNET_REPLY];
+	memset(buffer, 0, sizeof(buffer));
+	string input;
+	//now request a user name
+	printf("Name : ");
+	getline(cin, input);
+	this->userPI.do_user(input);
+	this->userPI.telnetRead(buffer, MAX_TELNET_REPLY);
+		printf("%s\n", buffer);
+	//now request a password
+	printf("password : ");
+	getline(cin, input);
+	this->userPI.do_pass(input);
+	this->userPI.telnetRead(buffer, MAX_TELNET_REPLY);
+		printf("%s\n", buffer);
+	this->userPI.do_syst();
+	this->userPI.telnetRead(buffer, MAX_TELNET_REPLY);
+		printf("%s\n", buffer);
 
+	//TODO: no valid
 	return 0;
-	//TODO:
 }
 
 extern string int2str(int value);
 
 int UI::initConnection(string addr, int port){
+	struct sockaddr_in6 sin6;
+	memset(&sin6, 0, sizeof(sin6));
 	struct addrinfo hints, *res, *res0;
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
@@ -90,6 +110,8 @@ int UI::initConnection(string addr, int port){
 	if (s != -1){
 		this->sockfd = s;
 		userPI.setTelnetSockfd(s);
+		userPI.setServdddr(addr);
+		//into pasv mode
 		return 0;
 	}else{
 		return 1;
