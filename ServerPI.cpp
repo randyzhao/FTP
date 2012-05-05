@@ -6,6 +6,8 @@
  */
 
 #include "ServerPI.h"
+#include "DTP.h"
+
 #include <string.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
@@ -88,7 +90,7 @@ int ServerPI::listenTransferPort() {
 	memset(&sin6, 0, sizeof(sin6));
 	sin6.sin6_family = AF_INET6;
 	sin6.sin6_port = htons(0);
-	int s0 = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	int s0 = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
 	if (s0 == -1) {
 		printf("init transfer socket error : %s\n", strerror(errno));
 		return -1;
@@ -123,17 +125,21 @@ int ServerPI::listenTransferPort() {
 int ServerPI::acceptTransferPort() {
 	int s0 = this->transferListenSockfd;
 	struct sockaddr_in6 sin6_accept;
-	socklen_t sin6_len;
+	socklen_t sin6_len = sizeof(sin6_accept);
 	char hbuf[NI_MAXHOST];
 	memset(&hbuf, 0, sizeof(hbuf));
+	int s;
 	//TODO: not valid user's address. It may not come from the user
-	int s = accept(s0, (struct sockaddr*) &sin6_accept, &sin6_len);
+	while ((s = accept(s0, (struct sockaddr*) &sin6_accept, &sin6_len)) < 0){
+		printf("accpet error: %s\n", strerror(errno));
+	}
 	getnameinfo((struct sockaddr*) &sin6_accept, sin6_len, hbuf, sizeof(hbuf),
 			NULL, 0, NI_NUMERICHOST);
-	printf("transfer connection ok\n");
+	printf("transfer connection build from : %s\n", hbuf);
 	close(this->transferListenSockfd);
 	this->transferListenSockfd = -1;
 	this->transferSockfd = s;
+	this->dtp.setSockfd(s);
 	return 0;
 }
 
@@ -144,6 +150,9 @@ int ServerPI::do_list() {
 	string content = this->dir();
 	this->telnetSend("150 Here comes the directory listing");
 	//TODO: dtp working
+	this->dtp.sendMsg(content);
+	close(this->transferSockfd);
+	this->dtp.setSockfd(-1);
 	return 0;
 }
 

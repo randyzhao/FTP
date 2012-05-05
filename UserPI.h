@@ -10,7 +10,7 @@
 
 #include <string>
 #include <netdb.h>
-#include "UserDTP.h"
+#include "DTP.h"
 using namespace std;
 
 //user protocol interpreter
@@ -22,7 +22,7 @@ private:
 	int transferSockfd;
 	int transferListenSockfd;
 	//this is the read address of server
-	UserDTP dtp;
+	DTP dtp;
 	string servAddr;
 	//int listenTransferConnection();
 	//int acceptTransferConnection();

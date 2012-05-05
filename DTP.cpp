@@ -5,19 +5,20 @@
  *      Author: randy
  */
 
-#include "UserDTP.h"
+#include "DTP.h"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
 #include <cstring>
 #include<sys/types.h>
+#include <errno.h>
 #include<sys/socket.h>
 using namespace std;
 
 #define RECV_BUFFER_LEN 10000
 #define RECEVIE_TIME_LIMIT 20
 
-int UserDTP::getFile(string localPath) {
+int DTP::getFile(string localPath) {
 	char* file = new char[RECV_BUFFER_LEN];
 	int len;
 	if ((len = getFile(file)) >= 0) {
@@ -51,7 +52,7 @@ int UserDTP::getFile(string localPath) {
 	return 0;
 }
 
-int UserDTP::getFile(char *file) {
+int DTP::getFile(char *file) {
 	memset(file, 0, sizeof(file));
 	int totalSize = 0;
 	//TODO: time limit for receive
@@ -61,9 +62,8 @@ int UserDTP::getFile(char *file) {
 	char* recvbuf = new char[RECV_BUFFER_LEN + 10];while
 (	true) { //not finish yet
 		memset(recvbuf, 0, sizeof(recvbuf));
-		int recvLen;
-		if ((recvLen = recvfrom(sockfd, recvbuf, RECV_BUFFER_LEN, 0, NULL, NULL))
-		<= 0) {
+		int recvLen = read(sockfd, recvbuf, RECV_BUFFER_LEN);
+		if (recvLen <= 0){
 			break;
 		}
 		//receive successful
@@ -82,7 +82,16 @@ int UserDTP::getFile(char *file) {
 	return totalSize;
 }
 
-void UserDTP::setSockfd(int sockfd) {
+void DTP::setSockfd(int sockfd) {
 	this->sockfd = sockfd;
+}
+
+void DTP::sendMsg(string content) {
+	int len = write(this->sockfd, content.c_str(), strlen(content.c_str()));
+	if (len < 0) {
+		printf("socket error: %s\n", strerror(errno));
+	} else {
+		printf("send msg length = %d, content:\n %s\n", len, content.c_str());
+	}
 }
 

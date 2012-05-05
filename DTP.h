@@ -13,7 +13,7 @@
 using namespace std;
 
 //user date transfer
-class UserDTP{
+class DTP{
 private:
 	int sockfd;
 public:
@@ -23,6 +23,8 @@ public:
 	//return value is the real size of the file
 	int getFile(char* buffer);
 	void setSockfd(int sockfd);
+	//send a msg
+	void sendMsg(string content);
 };
 
 

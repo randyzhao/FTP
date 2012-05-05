@@ -9,12 +9,13 @@
 #define SERVERPI_H_
 #include <string>
 #include <boost/thread/mutex.hpp>
+#include "DTP.h"
 using namespace std;
 
 class ServerPI{
 private:
 	boost::mutex* listenMutex;
-
+	DTP dtp;
 	//the socket while in begin()
 	int listenSockfd;
 	int telnetSockfd;
