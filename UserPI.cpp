@@ -57,45 +57,6 @@ int UserPI::do_retr(string remotePath, string localPath) {
 	return 0;
 }
 
-//int UserPI::listenTransferConnection() {
-////	struct addrinfo hints, *res, *res0;
-////	int error;
-////	memset(&hints, 0, sizeof(hints));
-////	hints.ai_socktype = SOCK_STREAM;
-////	hints.ai_flags = AI_PASSIVE;
-////	error = getaddrinfo(NULL, int2str(TRANSFORM_PORT).c_str(), &hints, &res0);
-////	if (error){
-////		printf("get addr localhost:%s error\n", int2str(TRANSFORM_PORT).c_str());
-////		return 1;
-////	}
-////	int smax = 0;
-////	int sockmax = -1;
-////	for (res = res0; res && smax < MAXSO)
-//	struct sockaddr_in userAddr;
-//	this->transferListenSockfd = socket(AF_INET, SOCK_STREAM, 0);
-//	memset(&userAddr, 0, sizeof(userAddr));
-//	userAddr.sin_family = AF_INET;
-//	userAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-//	userAddr.sin_port = htons(TRANSFORM_PORT);
-//	bind(this->transferListenSockfd, (struct sockaddr*) &userAddr,
-//			sizeof(userAddr));
-//	listen(this->transferListenSockfd, 100);
-//	return 0;
-//}
-
-//int UserPI::acceptTransferConnection() {
-//	socklen_t servlen;
-//	servlen = sizeof(serverAddr);
-//	int connfd = -1;
-//	while ((connfd = accept(this->transferListenSockfd,
-//			(struct sockaddr*) &serverAddr, &servlen)) < 0) {
-//		//do nothing
-//	}
-//	printf("accept transfer connection successfully\n");
-//	this->transferSockfd = connfd;
-//	close(this->transferListenSockfd);
-//	return 0;
-//}
 
 int UserPI::do_list(string remotePath) {
 	//this->listenTransferConnection();

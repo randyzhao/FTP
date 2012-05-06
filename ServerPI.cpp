@@ -181,6 +181,7 @@ ServerPI::ServerPI(int listenSockfd, boost::mutex* listenMutex) {
 }
 
 void ServerPI::begin() {
+	printf("new thread begin\n");
 	char hbuf[NI_MAXHOST];
 	memset(hbuf, 0, sizeof(hbuf));
 	for (;;) { //thread should always be running

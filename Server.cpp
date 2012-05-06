@@ -29,14 +29,13 @@ void Server::initThread()
 	for (int i = 0; i < THREAD_NUM; i++){
 		ServerPI* pi = new ServerPI(this->listenSocked, this->listenMutex);
 		boost::thread thrd(boost::bind(&ServerPI::begin, pi));
-		thrd.join();
 	}
+
 }
 
 void Server::run() {
-	struct sockaddr_in6 sin6, sin6_accept;
-	socklen_t sin6_len;
-	int s0 = -1, s = -1;
+	struct sockaddr_in6 sin6;
+	int s0;
 	memset(&sin6, 0, sizeof(sin6));
 	sin6.sin6_family = AF_INET6;
 	sin6.sin6_port = htons(IPV6_LISTEN_PORT);
@@ -58,10 +57,11 @@ void Server::run() {
 	}
 	this->listenSocked = s0;
 	printf("init server successfully\n");
-	char hbuf[NI_MAXHOST];
 	//init thread
 	this->initThread();
+	for(;;){
 
+	}
 //	for (;;) {
 //		memset(&hbuf, 0, sizeof(hbuf));
 //		sin6_len = sizeof(sin6_accept);
