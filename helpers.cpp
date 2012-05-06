@@ -26,7 +26,7 @@ int extractCode(string msg){
 	boost::trim(msg);
 	const char* m = msg.c_str();
 	for (unsigned int i = 0; i < msg.size(); i++){
-		if (m[i] <= 57 || m[i] >= 48){
+		if (m[i] <= 57 && m[i] >= 48){
 			code.push_back(m[i] - 48);
 		}else{
 			break;

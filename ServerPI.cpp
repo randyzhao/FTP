@@ -59,7 +59,6 @@ int ServerPI::telnetSend(string content) {
 	temp = temp.append("\r\n");
 	if (write(this->telnetSockfd, temp.c_str(), temp.length()) < 0) {
 		printf("telnet send error\n");
-		this->telnetClosed = true;
 		return -1;
 	}
 	return 0;
@@ -70,7 +69,7 @@ int ServerPI::telnetRead(char *buffer, int size) {
 	char tempBuffer[MAX_TELNET_REPLY];
 	memset(tempBuffer, 0, sizeof(tempBuffer));
 	int totalLen = 0;
-	int currentLen;
+	int currentLen = 0;
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = MAX_TELNET_READ_TIME_US;
@@ -84,9 +83,6 @@ int ServerPI::telnetRead(char *buffer, int size) {
 		}
 		totalLen += currentLen;
 		memset(tempBuffer, 0, sizeof(tempBuffer));
-	}
-	if (currentLen < 0) {
-		this->telnetClosed = true;
 	}
 	buffer[totalLen] = 0;
 	return totalLen;

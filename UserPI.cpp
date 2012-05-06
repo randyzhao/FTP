@@ -307,6 +307,7 @@ int UserPI::initUser() {
 	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
 		//do nothing, keep reading
 	}
+	printf("extract code %s\n", buffer);
 	int code = extractCode(buffer);
 	if (code != SERVICE_READY_FOR_NEW_USER){
 		printf("service could not be opened\n");
