@@ -16,6 +16,10 @@ class ServerPI{
 private:
 	boost::mutex* listenMutex;
 	DTP dtp;
+
+	bool fatalError;
+	bool telnetClosed;
+
 	//the socket while in begin()
 	int listenSockfd;
 	int telnetSockfd;

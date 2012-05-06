@@ -45,8 +45,10 @@ Command CommandParser::parseCommand(string com) {
 
 		}
 	} else if (splitVec[0] == "dir") {
-		//TODO:dir commands are not supported directory yet
 		cmd.setType(CommandType_Dir);
+		if (splitVec.size() > 1){
+			cmd.addParam(splitVec[1]);
+		}
 	} else {
 		printf("command %s is not supported yet\n", splitVec[0].c_str());
 	}

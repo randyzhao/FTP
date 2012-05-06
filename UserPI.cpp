@@ -102,7 +102,8 @@ int UserPI::do_list(string remotePath) {
 	//this->listenTransferConnection();
 	//this->telnetSend("PORT 127,0,0,1,206,233");
 	this->do_pasv();
-	this->telnetSend("LIST");
+	string content = "LIST " + remotePath;
+	this->telnetSend(content);
 	//this->acceptTransferConnection();
 	//this->dtp.setSockfd(this->transferSockfd);
 	char buffer[MAX_LIST_LEN];
@@ -112,6 +113,7 @@ int UserPI::do_list(string remotePath) {
 		printf("%s\n", buffer);
 	} else {
 		printf("get list error\n");
+		return -1;
 	}
 	return 0;
 }
@@ -125,7 +127,7 @@ int UserPI::telnetSend(string content) {
 	temp = temp.append("\r\n");
 	if (write(this->telnetSockfd, temp.c_str(), temp.length()) < 0) {
 		printf("telnet send error\n");
-		return 1;
+		return -1;
 	}
 	return 0;
 }
@@ -157,17 +159,13 @@ int UserPI::telnetRead(char *buffer, int size) {
 int UserPI::do_user(string name) {
 	string content = "USER ";
 	content = content.append(name);
-	this->telnetSend(content);
-	//TODO: no valid
-	return 0;
+	return this->telnetSend(content);
 }
 
 int UserPI::do_pass(string pwd) {
 	string content = "PASS ";
 	content = content.append(pwd);
-	this->telnetSend(content);
-	//TODO: no valid
-	return 0;
+	return this->telnetSend(content);
 }
 
 int UserPI::do_syst() {
@@ -336,7 +334,6 @@ int UserPI::initUser() {
 	}
 	printf("%s\n", buffer);
 
-	//TODO: no valid
 	return 0;
 }
 

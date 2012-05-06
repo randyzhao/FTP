@@ -39,15 +39,17 @@ int ServerPI::do_pass() {
 
 int ServerPI::do_pasv() {
 	//TODO: not valid
-	this->listenTransferPort();
+	if (this->listenTransferPort()) {
+		printf("listen transferport error\n");
+		return -1;
+
+	}
 	char buf[MAX_TELNET_READ_TIME_US];
 	memset(&buf, 0, sizeof(buf));
-	//TODO: address is not supported
 	sprintf(buf, "229 Entering extended passive mode (|||%d|).",
 			this->transferListenPort);
 	string content = buf;
-	this->telnetSend(content);
-	return 0;
+	return this->telnetSend(content);
 }
 
 int ServerPI::telnetSend(string content) {
@@ -55,7 +57,8 @@ int ServerPI::telnetSend(string content) {
 	temp = temp.append("\r\n");
 	if (write(this->telnetSockfd, temp.c_str(), temp.length()) < 0) {
 		printf("telnet send error\n");
-		return 1;
+		this->telnetClosed = true;
+		return -1;
 	}
 	return 0;
 }
@@ -79,6 +82,9 @@ int ServerPI::telnetRead(char *buffer, int size) {
 		}
 		totalLen += currentLen;
 		memset(tempBuffer, 0, sizeof(tempBuffer));
+	}
+	if (currentLen < 0){
+		this->telnetClosed = true;
 	}
 	buffer[totalLen] = 0;
 	return totalLen;
@@ -110,7 +116,7 @@ int ServerPI::listenTransferPort() {
 	struct sockaddr_in6 sa;
 	memset(&sa, 0, sizeof(sa));
 	socklen_t salen = sizeof(sa);
-	if (getsockname(s0, (struct sockaddr*)&sa, &salen) == -1){
+	if (getsockname(s0, (struct sockaddr*) &sa, &salen) == -1) {
 		printf("getsockname error\n");
 		return -1;
 	}
@@ -129,7 +135,7 @@ int ServerPI::acceptTransferPort() {
 	memset(&hbuf, 0, sizeof(hbuf));
 	int s;
 	//TODO: not valid user's address. It may not come from the user
-	while ((s = accept(s0, (struct sockaddr*) &sin6_accept, &sin6_len)) < 0){
+	while ((s = accept(s0, (struct sockaddr*) &sin6_accept, &sin6_len)) < 0) {
 		printf("accpet error: %s\n", strerror(errno));
 	}
 	getnameinfo((struct sockaddr*) &sin6_accept, sin6_len, hbuf, sizeof(hbuf),
@@ -148,7 +154,6 @@ int ServerPI::do_list() {
 	this->acceptTransferPort();
 	string content = this->dir();
 	this->telnetSend("150 Here comes the directory listing");
-	//TODO: dtp working
 	this->dtp.sendMsg(content);
 	close(this->transferSockfd);
 	this->dtp.setSockfd(-1);
@@ -181,9 +186,11 @@ void ServerPI::begin() {
 		int sock;
 		//try to accept
 		for (;;) {
-			boost::mutex::scoped_lock lock(*(this->listenMutex));
-			sock = accept(this->listenSockfd, (struct sockaddr*) &sin6_accept,
-					&sin6_len);
+			{
+				boost::mutex::scoped_lock lock(*(this->listenMutex));
+				sock = accept(this->listenSockfd,
+						(struct sockaddr*) &sin6_accept, &sin6_len);
+			}
 			printf("accept a user\n");
 			if (sock == -1) {
 				printf("accept failed from %s\n", hbuf);
@@ -200,32 +207,30 @@ void ServerPI::begin() {
 	}
 }
 
-void ServerPI::requestDispacher(string cmd)
-{
+void ServerPI::requestDispacher(string cmd) {
 	vector<string> splitVec;
 	boost::split(splitVec, cmd, boost::algorithm::is_space(),
 			boost::algorithm::token_compress_on);
 	string type = splitVec[0];
-	if (type == "USER"){
+	if (type == "USER") {
 		this->do_user();
-	}else if (type == "PASS"){
+	} else if (type == "PASS") {
 		this->do_pass();
-	}else if (type == "EPSV"){//TODO: only support ipv6. Should support PASV also
+	} else if (type == "EPSV") { //TODO: only support ipv6. Should support PASV also
 		this->do_pasv();
-	}else if (type == "LIST"){
+	} else if (type == "LIST") {
 		this->do_list();
-	}else if (type == "SYST"){
+	} else if (type == "SYST") {
 		this->do_syst();
-	}else if (type == "RETR"){
+	} else if (type == "RETR") {
 		this->do_retr(splitVec[1]);
-	}else{
+	} else {
 		printf("not supported yet");
 	}
 
 }
 
-int ServerPI::do_syst()
-{
+int ServerPI::do_syst() {
 	string cmd = "uname -a";
 	char buf[MAX_TELNET_REPLY];
 	memset(buf, 0, sizeof(buf));
@@ -238,27 +243,41 @@ int ServerPI::do_syst()
 	return 0;
 }
 
-int ServerPI::do_retr(string path)
-{
+int ServerPI::do_retr(string path) {
 	//TODO: not valid existence
 	this->acceptTransferPort();
-	dtp.sendFile(path);
+	int result = dtp.sendFile(path);
+	if (result == -1){
+		//TODO: file not exist
+	}
 	close(this->transferSockfd);
 	dtp.setSockfd(-1);
+	return result;
 }
 void ServerPI::run() {
+	this->fatalError = false;
+	this->telnetClosed = false;
+
 	printf("ServerPI : run\n");
 	this->telnetSend("220 Randy's FTP alpha 1.0\n");
 	char buf[MAX_TELNET_REPLY];
 	memset(buf, 0, sizeof(buf));
-	for(;;){
+	for (;;) {
 		int len = this->telnetRead(buf, MAX_TELNET_REPLY);
-		if (len == 0){
+		if (len == 0) {
 			continue;
 		}
 		string cmd = buf;
 		printf("recv request : %s\n", buf);
 		this->requestDispacher(cmd);
+		if (this->telnetClosed){
+			printf("client connection closed\n");
+			return;
+		}
+		if (this->fatalError){
+			printf("fatal error\n");
+			return;
+		}
 	}
 }
 

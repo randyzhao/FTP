@@ -62,22 +62,21 @@ void Server::run() {
 	//init thread
 	this->initThread();
 
-	for (;;) {
-		memset(&hbuf, 0, sizeof(hbuf));
-		sin6_len = sizeof(sin6_accept);
-		printf("waiting for connection\n");
-		s = accept(s0, (struct sockaddr*) &sin6_accept, &sin6_len);
-		printf("accept a user\n");
-		if (s == -1) {
-			printf("accept failed from %s\n", hbuf);
-		} else {
-			getnameinfo((struct sockaddr*) &sin6_accept, sin6_len, hbuf,
-					sizeof(hbuf), NULL, 0, NI_NUMERICHOST);
-			printf("accepPt a connection from %s\n", hbuf);
-					//TODO: further operation
-		}
-
-	}
+//	for (;;) {
+//		memset(&hbuf, 0, sizeof(hbuf));
+//		sin6_len = sizeof(sin6_accept);
+//		printf("waiting for connection\n");
+//		s = accept(s0, (struct sockaddr*) &sin6_accept, &sin6_len);
+//		printf("accept a user\n");
+//		if (s == -1) {
+//			printf("accept failed from %s\n", hbuf);
+//		} else {
+//			getnameinfo((struct sockaddr*) &sin6_accept, sin6_len, hbuf,
+//					sizeof(hbuf), NULL, 0, NI_NUMERICHOST);
+//			printf("accepPt a connection from %s\n", hbuf);
+//		}
+//
+//	}
 
 }
 

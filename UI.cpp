@@ -90,7 +90,7 @@ int UI::initConnection(string addr, int port) {
 }
 
 int UI::handleDirCmd(Command dirCmd) {
-	this->userPI.do_list("test");
+	this->userPI.do_list(dirCmd.getArg(0));
 	return 0;
 }
 

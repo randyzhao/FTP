@@ -99,6 +99,10 @@ void DTP::sendMsg(string content) {
 int DTP::sendFile(string path)
 {
 	int fd = open(path.c_str(), O_RDONLY);
+	if (fd == -1){
+		printf("file %s not exist\n", path.c_str());
+		return -1;
+	}
 	char* buf = new char[MAX_FILE_SIZE];
 	memset(buf, 0, sizeof(buf));
 	int size = read(fd, buf, MAX_FILE_SIZE);
@@ -112,6 +116,7 @@ int DTP::sendFile(string path)
 	} else {
 		printf("send file %s successfully\n", path.c_str());
 	}
+	return 0;
 }
 
 
