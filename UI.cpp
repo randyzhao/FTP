@@ -29,16 +29,15 @@ using namespace std;
 
 int UI::handleGetCmd(Command getCmd) {
 	assert(getCmd.getType() == CommandType_Get);
-	this->userPI.do_retr(getCmd.getParam("localPath").getStringValue(),
-			getCmd.getParam("remotePath").getStringValue());
+	this->userPI.do_retr(getCmd.getArg(0), getCmd.getArg(1));
 	return 0;
 	//TODO;
 }
 
 int UI::handleOpenCmd(Command openCmd) {
 	assert(openCmd.getType() == CommandType_Open);
-	int port = openCmd.getParam("port").getIntValue();
-	string addr = openCmd.getParam("addr").getStringValue();
+	int port = atoi(openCmd.getArg(1).c_str());
+	string addr = openCmd.getArg(0);
 	if (initConnection(addr, port)) {
 		printf("Could not connect to %s:%d\n", addr.c_str(), port);
 		return -1;

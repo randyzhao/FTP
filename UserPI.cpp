@@ -24,7 +24,7 @@ using namespace boost;
 #define MAX_TELNET_REPLY 100000
 #define MAX_TELNET_READ_TIME_US 200000
 
-int UserPI::do_retr(string localPath, string remotePath) {
+int UserPI::do_retr(string remotePath, string localPath) {
 	//TODO: port command is not well supported yet
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));

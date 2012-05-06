@@ -13,7 +13,7 @@
 
 using namespace std;
 
-#define TELNET_PORT 21
+#define TELNET_PORT "21"
 
 Command CommandParser::parseCommand(string com) {
 	//using boost to split the string
@@ -27,35 +27,21 @@ Command CommandParser::parseCommand(string com) {
 			printf("arguments for get command is too low\n");
 		} else {
 			cmd.setType(CommandType_Get);
-			CommandParam remotePathParam;
-			remotePathParam.setType(ParamType_String);
-			remotePathParam.setName("remotePath");
-			remotePathParam.setStringValue(splitVec[1]);
-			cmd.addParam(remotePathParam);
-
-			CommandParam localPathParam;
-			localPathParam.setType(ParamType_String);
-			localPathParam.setName("localPath");
-			localPathParam.setStringValue(splitVec[2]);
-			cmd.addParam(localPathParam);
+			cmd.addParam(splitVec[1]);
+			cmd.addParam(splitVec[2]);
 		}
 	} else if (splitVec[0] == "open") { //open command
 		if (splitVec.size() < 2) {
 			printf("arguments for open command is too low\n");
 		} else {
 			cmd.setType(CommandType_Open);
-			CommandParam serverAddrParam;
-			serverAddrParam.setType(ParamType_String);
-			serverAddrParam.setName("addr");
-			serverAddrParam.setStringValue(splitVec[1]);
-			cmd.addParam(serverAddrParam);
-
-			CommandParam portParam;
-			portParam.setType(ParamType_Int);
-			portParam.setName("port");
-			//TODO:support only default telnet port
-			portParam.setIntValue(TELNET_PORT);
-			cmd.addParam(portParam);
+			cmd.addParam(splitVec[1]);
+			if (splitVec.size() >= 3){
+				cmd.addParam(splitVec[2]);
+			}else{
+				//add default port
+				cmd.addParam(TELNET_PORT);
+			}
 
 		}
 	} else if (splitVec[0] == "dir") {

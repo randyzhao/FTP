@@ -9,36 +9,9 @@
 #define COMMAND_H_
 
 #include <string>
-#include <map>
+#include <vector>
 using namespace std;
 
-enum ParamType{
-	ParamType_Int,
-	ParamType_String,
-	ParamType_Double,
-	ParamType_Error
-};
-
-class CommandParam
-{
-private:
-    string name;
-    int intValue;
-    string stringValue;
-    double doubleValue;
-    ParamType type;
-public:
-    double getDoubleValue() const;
-    int getIntValue() const;
-    string getName() const;
-    string getStringValue() const;
-    ParamType getType() const;
-    void setDoubleValue(double doubleValue);
-    void setIntValue(int intValue);
-    void setName(string name);
-    void setStringValue(string stringValue);
-    void setType(ParamType type);
-};
 
 enum CommandType{
 	CommandType_Get,
@@ -52,13 +25,12 @@ class Command
 {
 private:
     CommandType type;
-    map<string, CommandParam> params;
+    vector<string> args;
 public:
-    CommandParam getParam(string name);
-
-    void addParam(CommandParam param);
-    CommandType getType() const;
     void setType(CommandType type);
+    CommandType getType() const;
+    string getArg(int id);
+    void addParam(string arg);
 
 };
 

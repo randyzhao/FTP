@@ -47,7 +47,6 @@ int ServerPI::do_pasv() {
 			this->transferListenPort);
 	string content = buf;
 	this->telnetSend(content);
-	//TODO:
 	return 0;
 }
 
@@ -86,7 +85,6 @@ int ServerPI::telnetRead(char *buffer, int size) {
 }
 
 int ServerPI::listenTransferPort() {
-	//TODO:
 	struct sockaddr_in6 sin6;
 	memset(&sin6, 0, sizeof(sin6));
 	sin6.sin6_family = AF_INET6;
@@ -158,7 +156,7 @@ int ServerPI::do_list() {
 }
 
 string ServerPI::dir() {
-	string cmd = "dir";
+	string cmd = "ls -l";
 	FILE* result = popen(cmd.c_str(), "r");
 	char buf[MAX_TELNET_REPLY];
 	memset(buf, 0, sizeof(buf));

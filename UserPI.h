@@ -35,7 +35,7 @@ public:
 	//TODO: now only support ipv6 eprt
 	int do_port();
 	//retrive file from remote
-	int do_retr(string localPath, string remotePath);
+	int do_retr(string remotePath, string localPath);
 	int do_user(string name);
 	int do_pass(string pwd);
 	int do_syst();
