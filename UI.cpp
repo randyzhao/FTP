@@ -29,9 +29,7 @@ using namespace std;
 
 int UI::handleGetCmd(Command getCmd) {
 	assert(getCmd.getType() == CommandType_Get);
-	this->userPI.do_retr(getCmd.getArg(0), getCmd.getArg(1));
-	return 0;
-	//TODO;
+	return this->userPI.do_retr(getCmd.getArg(0), getCmd.getArg(1));
 }
 
 int UI::handleOpenCmd(Command openCmd) {
@@ -129,7 +127,6 @@ int UI::initConnection(string addr, int port) {
 
 int UI::handleDirCmd(Command dirCmd) {
 	this->userPI.do_list("test");
-	//TODO:
 	return 0;
 }
 

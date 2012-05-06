@@ -18,7 +18,6 @@ int main(int argc, char** argv) {
 		ser.run();
 		break;
 	case 'c':
-		//TODO:
 		ui.run();
 		break;
 	default:

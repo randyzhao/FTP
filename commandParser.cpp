@@ -51,6 +51,5 @@ Command CommandParser::parseCommand(string com) {
 		printf("command %s is not supported yet\n", splitVec[0].c_str());
 	}
 	return cmd;
-	//TODO:
 }
 

@@ -37,7 +37,7 @@ int DTP::getFile(string localPath) {
 		f = fopen(localPath.c_str(), "w");
 		if (f == NULL) {
 			printf("open file %s error\n", localPath.c_str());
-			return 1;
+			return -1;
 		} else {
 			if (fputs(file, f) == EOF) {
 				printf("write file %s error\n", localPath.c_str());

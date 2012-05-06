@@ -28,17 +28,30 @@ int UserPI::do_retr(string remotePath, string localPath) {
 	//TODO: port command is not well supported yet
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));
-	//IP addr : 127.0.0.1
-	//port : 11122
 	this->do_pasv();
-	this->telnetRead(buffer, MAX_TELNET_REPLY);
+	int len;
+	while((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0){
+		//do nothing, just keep reading
+	}
+	if (len < 0){
+		return -1;
+	}
 	printf("%s\n", buffer);
 	string content = "RETR ";
 	content = content + remotePath;
-	this->telnetSend(content);
+	if (this->telnetSend(content)){
+		return -1;
+	}
 	this->dtp.setSockfd(this->transferSockfd);
-	this->dtp.getFile(localPath);
-	this->telnetRead(buffer, MAX_TELNET_REPLY);
+	if (this->dtp.getFile(localPath)){
+		return -1;
+	}
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0){
+		//do nothing, keep reading
+	}
+	if (len < 0){
+		return -1;
+	}
 	printf("%s\n", buffer);
 	return 0;
 }
@@ -158,13 +171,14 @@ int UserPI::do_pass(string pwd) {
 }
 
 int UserPI::do_syst() {
-	this->telnetSend("SYST");
-	//TODO: not valid
-	return 1;
+	if (this->telnetSend("SYST")){
+		return 1;
+	}
+	return 0;
 }
 
 int UserPI::do_port() {
-	//TODO:
+	//TODO:do_port will be supported in alpha 2.0
 	return 0;
 }
 
