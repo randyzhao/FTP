@@ -30,7 +30,7 @@ private:
 public:
 	//PASV in ipv4 and EPSV in ipv6
 	int do_pasv();
-	//set port for server to connect
+	//set port for server to connectnc
 	//PORT in ipv4 and EPRT in ipv6
 	//TODO: now only support ipv6 eprt
 	int do_port();
@@ -40,6 +40,8 @@ public:
 	int do_pass(string pwd);
 	int do_syst();
 	int do_list(string remotePath);
+	int do_open(string addr, int port);
+	int initUser();
 	void setTelnetSockfd(int telnetSockfd);
 	//read message using telnet and store to the buffer
 	//return the length of the message

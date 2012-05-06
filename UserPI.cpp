@@ -30,26 +30,26 @@ int UserPI::do_retr(string remotePath, string localPath) {
 	memset(buffer, 0, sizeof(buffer));
 	this->do_pasv();
 	int len;
-	while((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0){
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
 		//do nothing, just keep reading
 	}
-	if (len < 0){
+	if (len < 0) {
 		return -1;
 	}
 	printf("%s\n", buffer);
 	string content = "RETR ";
 	content = content + remotePath;
-	if (this->telnetSend(content)){
+	if (this->telnetSend(content)) {
 		return -1;
 	}
 	this->dtp.setSockfd(this->transferSockfd);
-	if (this->dtp.getFile(localPath)){
+	if (this->dtp.getFile(localPath)) {
 		return -1;
 	}
-	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0){
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
 		//do nothing, keep reading
 	}
-	if (len < 0){
+	if (len < 0) {
 		return -1;
 	}
 	printf("%s\n", buffer);
@@ -171,7 +171,7 @@ int UserPI::do_pass(string pwd) {
 }
 
 int UserPI::do_syst() {
-	if (this->telnetSend("SYST")){
+	if (this->telnetSend("SYST")) {
 		return 1;
 	}
 	return 0;
@@ -188,7 +188,7 @@ int UserPI::do_pasv() {
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));
 	int len;
-	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0){
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
 		//keep read from telnet
 	}
 	int count = 0;
@@ -201,7 +201,7 @@ int UserPI::do_pasv() {
 			count += temp * (buffer[i] - 48);
 			temp *= 10;
 		}
-		if (!digit && count != 0){
+		if (!digit && count != 0) {
 			break;
 		}
 	}
@@ -252,6 +252,92 @@ int UserPI::do_pasv() {
 
 void UserPI::setServdddr(string addr) {
 	this->servAddr = addr;
+}
+
+int UserPI::do_open(string addr, int port) {
+	struct sockaddr_in6 sin6;
+	memset(&sin6, 0, sizeof(sin6));
+	struct addrinfo hints, *res, *res0;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	int error = getaddrinfo(addr.c_str(), int2str(port).c_str(), &hints, &res0);
+	if (error) {
+		printf("get addr %s error\n", addr.c_str());
+		return 1;
+	}
+	char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+	int s = -1;
+	for (res = res0; res; res = res->ai_next) {
+		error = getnameinfo(res->ai_addr, res->ai_addrlen, hbuf, sizeof(hbuf),
+				sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
+		if (error) {
+			printf("get addr %s error\n", addr.c_str());
+			return 1;
+		}
+		printf("trying %s : %s...", hbuf, sbuf);
+		s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (s < 0) {
+			printf("failed\n");
+			continue;
+		}
+		if (connect(s, res->ai_addr, res->ai_addrlen) < 0) {
+			close(s);
+			s = -1;
+			printf("failed\n");
+			continue;
+		}
+		//successfully
+		printf("successfully\n");
+		break;
+	}
+	if (s != -1) {
+		this->telnetSockfd = s;
+		this->servAddr = addr;
+		if (!this->initUser()) {
+			return 0;
+		} else {
+			return -1;
+		}
+	} else {
+		return -1;
+	}
+}
+
+int UserPI::initUser() {
+	int len;
+	char buffer[MAX_TELNET_REPLY];
+	memset(buffer, 0, sizeof(buffer));
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
+		//do nothing, keep reading
+	}
+	//TODO: valid for 220
+	printf("%s\n", buffer);
+	string input;
+	//now request a user name
+	printf("Name : ");
+	getline(cin, input);
+	this->do_user(input);
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
+		//do nothing, keep reading
+	}
+	printf("%s\n", buffer);
+	//now request a password
+	printf("password : ");
+	getline(cin, input);
+	this->do_pass(input);
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
+		//do nothing, keep reading
+	}
+	printf("%s\n", buffer);
+	this->do_syst();
+	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
+		//do nothing, keep reading
+	}
+	printf("%s\n", buffer);
+
+	//TODO: no valid
+	return 0;
 }
 
 UserPI::UserPI() {

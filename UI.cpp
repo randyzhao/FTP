@@ -36,43 +36,7 @@ int UI::handleOpenCmd(Command openCmd) {
 	assert(openCmd.getType() == CommandType_Open);
 	int port = atoi(openCmd.getArg(1).c_str());
 	string addr = openCmd.getArg(0);
-	if (initConnection(addr, port)) {
-		printf("Could not connect to %s:%d\n", addr.c_str(), port);
-		return -1;
-	}
-	int len;
-	char buffer[MAX_TELNET_REPLY];
-	memset(buffer, 0, sizeof(buffer));
-	while ((len = userPI.telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
-		//do nothing, keep reading
-	}
-	//TODO: valid for 220
-	printf("%s\n", buffer);
-	string input;
-	//now request a user name
-	printf("Name : ");
-	getline(cin, input);
-	this->userPI.do_user(input);
-	while ((len = this->userPI.telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
-		//do nothing, keep reading
-	}
-	printf("%s\n", buffer);
-	//now request a password
-	printf("password : ");
-	getline(cin, input);
-	this->userPI.do_pass(input);
-	while ((len = this->userPI.telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
-		//do nothing, keep reading
-	}
-	printf("%s\n", buffer);
-	this->userPI.do_syst();
-	while ((len = this->userPI.telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
-		//do nothing, keep reading
-	}
-	printf("%s\n", buffer);
-
-	//TODO: no valid
-	return 0;
+	return this->userPI.do_open(addr, port);
 }
 
 extern string int2str(int value);
