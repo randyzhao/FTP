@@ -27,6 +27,8 @@ private:
 	//int listenTransferConnection();
 	//int acceptTransferConnection();
 
+	//whether the client send QUIT command to the server
+	bool isClosed;
 public:
 	//PASV in ipv4 and EPSV in ipv6
 	int do_pasv();
@@ -41,6 +43,7 @@ public:
 	int do_syst();
 	int do_list(string remotePath);
 	int do_open(string addr, int port);
+	int do_close();
 	int initUser();
 	void setTelnetSockfd(int telnetSockfd);
 	//read message using telnet and store to the buffer
@@ -50,6 +53,7 @@ public:
 	int telnetSend(string content);
 	void setServdddr(string addr);
 	UserPI();
+	~UserPI();
 };
 
 #endif /* USERPI_H_ */

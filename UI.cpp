@@ -119,12 +119,21 @@ void UI::run() {
 		case CommandType_Dir:
 			handleDirCmd(cmd);
 			break;
+		case CommandType_Exit:
+			handleExitCmd(cmd);
+			break;
 		default:
 			//printf("commnd %s is not supported yet\n", cmdInput.c_str());
 			this->userPI.telnetSend(cmdInput);
 			break;
 		}
 	}
+}
+
+int UI::handleExitCmd(Command exitCmd)
+{
+	this->userPI.do_close();
+	return 0;
 }
 
 UI::UI() {

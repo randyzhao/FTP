@@ -23,6 +23,7 @@ using namespace boost;
 #define MAX_LIST_LEN 100000
 #define MAX_TELNET_REPLY 100000
 #define MAX_TELNET_READ_TIME_US 200000
+#define QUIT_WAIT_READ_TIMES 20
 
 int UserPI::do_retr(string remotePath, string localPath) {
 	char buffer[MAX_TELNET_REPLY];
@@ -290,6 +291,7 @@ int UserPI::do_open(string addr, int port) {
 	if (s != -1) {
 		this->telnetSockfd = s;
 		this->servAddr = addr;
+		this->isClosed = false;
 		if (!this->initUser()) {
 			return 0;
 		} else {
@@ -309,7 +311,7 @@ int UserPI::initUser() {
 	}
 	printf("extract code %s\n", buffer);
 	int code = extractCode(buffer);
-	if (code != SERVICE_READY_FOR_NEW_USER){
+	if (code != SERVICE_READY_FOR_NEW_USER) {
 		printf("service could not be opened\n");
 		return -1;
 	}
@@ -340,8 +342,29 @@ int UserPI::initUser() {
 	return 0;
 }
 
+int UserPI::do_close() {
+	this->telnetSend("QUIT");
+	char buf[MAX_TELNET_REPLY];
+	memset(buf, 0, sizeof(buf));
+	for (int i = 0; i < QUIT_WAIT_READ_TIMES; i++) {
+		int len = this->telnetRead(buf, MAX_TELNET_REPLY);
+		if (len > 0) {
+			printf("%s", buf);
+			break;
+		}
+	}
+	this->isClosed = true;
+	return 0;
+}
+
 UserPI::UserPI() {
 	this->telnetSockfd = -1;
 	this->transferSockfd = -1;
+}
+
+UserPI::~UserPI() {
+	if (!this->isClosed) {
+		do_close();
+	}
 }
 

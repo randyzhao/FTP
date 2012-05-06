@@ -36,9 +36,9 @@ Command CommandParser::parseCommand(string com) {
 		} else {
 			cmd.setType(CommandType_Open);
 			cmd.addParam(splitVec[1]);
-			if (splitVec.size() >= 3){
+			if (splitVec.size() >= 3) {
 				cmd.addParam(splitVec[2]);
-			}else{
+			} else {
 				//add default port
 				cmd.addParam(TELNET_PORT);
 			}
@@ -46,9 +46,11 @@ Command CommandParser::parseCommand(string com) {
 		}
 	} else if (splitVec[0] == "dir") {
 		cmd.setType(CommandType_Dir);
-		if (splitVec.size() > 1){
+		if (splitVec.size() > 1) {
 			cmd.addParam(splitVec[1]);
 		}
+	} else if (splitVec[0] == "close" || splitVec[0] == "exit") {
+		cmd.setType(CommandType_Exit);
 	} else {
 		printf("command %s is not supported yet\n", splitVec[0].c_str());
 	}

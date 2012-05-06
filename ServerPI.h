@@ -38,6 +38,7 @@ private:
 	int do_pasv();
 	int do_list();
 	int do_syst();
+	int do_quit();
 	int do_retr(string path);
 	//execute dir command and return the result in string
 

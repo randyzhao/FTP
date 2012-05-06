@@ -14,5 +14,6 @@
 #define SERVICE_READY_FOR_NEW_USER 220
 #define CANNOT_OPEN_DATA_CONNECTION_MSG "425 Can't open data connection"
 #define DATA_CONNECTION_ERROR_CODE 425
+#define QUIT_MSG "Goodbye. Have a good time"
 
 #endif /* FTPCODE_H_ */

@@ -26,6 +26,7 @@ private:
 	int handleGetCmd(Command getCmd);
 	int handleOpenCmd(Command openCmd);
 	int handleDirCmd(Command dirCmd);
+	int handleExitCmd(Command exitCmd);
 	int initConnection(string addr, int port);
 public:
 	void run();

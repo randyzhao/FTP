@@ -26,6 +26,7 @@
 #define MAX_TELNET_READ_TIME_US 200000
 #define PENDING_CONNECTION_QUEUE_LEN 10
 #define MAX_FILE_SIZE 10000000
+#define USER_TIME_OUT_TIMES 2000
 
 using namespace std;
 
@@ -147,7 +148,7 @@ int ServerPI::acceptTransferPort() {
 }
 
 int ServerPI::do_list() {
-	if (!this->inPassive){
+	if (!this->inPassive) {
 		this->telnetSend(CANNOT_OPEN_DATA_CONNECTION_MSG);
 		return -1;
 	}
@@ -227,6 +228,8 @@ void ServerPI::requestDispacher(string cmd) {
 		this->do_syst();
 	} else if (type == "RETR") {
 		this->do_retr(splitVec[1]);
+	} else if (type == "QUIT") {
+		this->do_quit();
 	} else {
 		printf("not supported yet");
 	}
@@ -257,6 +260,13 @@ int ServerPI::do_retr(string path) {
 	this->inPassive = false;
 	return result;
 }
+int ServerPI::do_quit() {
+	int len = this->telnetSend(QUIT_MSG);
+	close(this->telnetSockfd);
+	this->telnetClosed = true;
+	return 0;
+}
+
 void ServerPI::run() {
 	this->fatalError = false;
 	this->telnetClosed = false;
@@ -266,10 +276,17 @@ void ServerPI::run() {
 	this->telnetSend("220 Randy's FTP alpha 1.0\n");
 	char buf[MAX_TELNET_REPLY];
 	memset(buf, 0, sizeof(buf));
+	struct timeval bt, et;
+	gettimeofday(&bt, NULL);
 	for (;;) {
 		int len = this->telnetRead(buf, MAX_TELNET_REPLY);
 		if (len == 0) {
 			continue;
+		}
+		gettimeofday(&et, NULL);
+		if (et.tv_sec - bt.tv_sec > USER_TIME_OUT_TIMES){
+			printf("user time out\n");
+			close(this->telnetSockfd);
 		}
 		string cmd = buf;
 		printf("recv request : %s\n", buf);
