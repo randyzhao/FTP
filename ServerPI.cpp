@@ -7,6 +7,7 @@
 
 #include "ServerPI.h"
 #include "DTP.h"
+#include "FTPcode.h"
 
 #include <string.h>
 #include <sys/stat.h>
@@ -20,6 +21,7 @@
 #include <fcntl.h>
 #include <boost/algorithm/string.hpp>
 #include <vector>
+
 #define MAX_TELNET_REPLY 100000
 #define MAX_TELNET_READ_TIME_US 200000
 #define PENDING_CONNECTION_QUEUE_LEN 10
@@ -38,7 +40,6 @@ int ServerPI::do_pass() {
 }
 
 int ServerPI::do_pasv() {
-	//TODO: not valid
 	if (this->listenTransferPort()) {
 		printf("listen transferport error\n");
 		return -1;
@@ -48,6 +49,7 @@ int ServerPI::do_pasv() {
 	memset(&buf, 0, sizeof(buf));
 	sprintf(buf, "229 Entering extended passive mode (|||%d|).",
 			this->transferListenPort);
+	this->inPassive = true;
 	string content = buf;
 	return this->telnetSend(content);
 }
@@ -83,7 +85,7 @@ int ServerPI::telnetRead(char *buffer, int size) {
 		totalLen += currentLen;
 		memset(tempBuffer, 0, sizeof(tempBuffer));
 	}
-	if (currentLen < 0){
+	if (currentLen < 0) {
 		this->telnetClosed = true;
 	}
 	buffer[totalLen] = 0;
@@ -149,14 +151,19 @@ int ServerPI::acceptTransferPort() {
 }
 
 int ServerPI::do_list() {
-	//TODO: not valid if PASV mode
-	//TODO: not valid accept result
-	this->acceptTransferPort();
+	if (!this->inPassive){
+		this->telnetSend(CANNOT_OPEN_DATA_CONNECTION_MSG);
+		return -1;
+	}
+	if (this->acceptTransferPort()) {
+		return -1;
+	}
 	string content = this->dir();
 	this->telnetSend("150 Here comes the directory listing");
 	this->dtp.sendMsg(content);
 	close(this->transferSockfd);
 	this->dtp.setSockfd(-1);
+	this->inPassive = false;
 	return 0;
 }
 
@@ -244,19 +251,20 @@ int ServerPI::do_syst() {
 }
 
 int ServerPI::do_retr(string path) {
-	//TODO: not valid existence
 	this->acceptTransferPort();
 	int result = dtp.sendFile(path);
-	if (result == -1){
-		//TODO: file not exist
+	if (result == -1) {
+		this->telnetSend(OPEN_FILE_ERROR_MSG);
 	}
 	close(this->transferSockfd);
 	dtp.setSockfd(-1);
+	this->inPassive = false;
 	return result;
 }
 void ServerPI::run() {
 	this->fatalError = false;
 	this->telnetClosed = false;
+	this->inPassive = false;
 
 	printf("ServerPI : run\n");
 	this->telnetSend("220 Randy's FTP alpha 1.0\n");
@@ -270,11 +278,11 @@ void ServerPI::run() {
 		string cmd = buf;
 		printf("recv request : %s\n", buf);
 		this->requestDispacher(cmd);
-		if (this->telnetClosed){
+		if (this->telnetClosed) {
 			printf("client connection closed\n");
 			return;
 		}
-		if (this->fatalError){
+		if (this->fatalError) {
 			printf("fatal error\n");
 			return;
 		}

@@ -56,7 +56,6 @@ int DTP::getFile(string localPath) {
 int DTP::getFile(char *file) {
 	memset(file, 0, sizeof(file));
 	int totalSize = 0;
-	//TODO: time limit for receive
 	struct timeval tv;
 	tv.tv_sec = RECEVIE_TIME_LIMIT;
 	setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));

@@ -19,7 +19,8 @@ private:
 
 	bool fatalError;
 	bool telnetClosed;
-
+	//the service is in passive mode and ready for connect
+	bool inPassive;
 	//the socket while in begin()
 	int listenSockfd;
 	int telnetSockfd;

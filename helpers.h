@@ -12,6 +12,8 @@
 using namespace std;
 
 extern string int2str(int value);
-
-
+//extract ftp code from telnet msg
+extern int extractCode(string msg);
+extern int extractCode(char* buf);
+extern string generateMsg(int code, string content);
 #endif /* HELPERS_H_ */

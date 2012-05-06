@@ -15,7 +15,7 @@
 
 #include "UserPI.h"
 #include "helpers.h"
-
+#include "FTPcode.h"
 using namespace boost;
 
 #define TRANSFORM_PORT 52969
@@ -25,9 +25,9 @@ using namespace boost;
 #define MAX_TELNET_READ_TIME_US 200000
 
 int UserPI::do_retr(string remotePath, string localPath) {
-	//TODO: port command is not well supported yet
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));
+	//TODO: activate mode will be supported in alpha 2.0
 	this->do_pasv();
 	int len;
 	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
@@ -57,7 +57,6 @@ int UserPI::do_retr(string remotePath, string localPath) {
 }
 
 //int UserPI::listenTransferConnection() {
-////	//TODO:only support IPV4 yet
 ////	struct addrinfo hints, *res, *res0;
 ////	int error;
 ////	memset(&hints, 0, sizeof(hints));
@@ -92,7 +91,6 @@ int UserPI::do_retr(string remotePath, string localPath) {
 //		//do nothing
 //	}
 //	printf("accept transfer connection successfully\n");
-//	//TODO:valid code here
 //	this->transferSockfd = connfd;
 //	close(this->transferListenSockfd);
 //	return 0;
@@ -309,7 +307,11 @@ int UserPI::initUser() {
 	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
 		//do nothing, keep reading
 	}
-	//TODO: valid for 220
+	int code = extractCode(buffer);
+	if (code != SERVICE_READY_FOR_NEW_USER){
+		printf("service could not be opened\n");
+		return -1;
+	}
 	printf("%s\n", buffer);
 	string input;
 	//now request a user name
