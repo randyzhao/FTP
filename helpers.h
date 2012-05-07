@@ -16,4 +16,11 @@ extern string int2str(int value);
 extern int extractCode(string msg);
 extern int extractCode(char* buf);
 extern string generateMsg(int code, string content);
+
+class ConnectionStatus{
+	bool isIPV6;
+	int localPort;
+	int remotePort;
+
+};
 #endif /* HELPERS_H_ */

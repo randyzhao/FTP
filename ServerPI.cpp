@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <boost/algorithm/string.hpp>
 #include <vector>
 
@@ -228,9 +229,19 @@ void ServerPI::requestDispacher(string cmd) {
 	} else if (type == "SYST") {
 		this->do_syst();
 	} else if (type == "RETR") {
-		this->do_retr(splitVec[1]);
+		if (splitVec.size() < 2) {
+			this->telnetSend(ARG_SYNTEX_ERROR_MSG);
+		} else {
+			this->do_retr(splitVec[1]);
+		}
 	} else if (type == "QUIT") {
 		this->do_quit();
+	} else if (type == "CWD") {
+		if (splitVec.size() < 2) {
+			this->telnetSend(ARG_SYNTEX_ERROR_MSG);
+		} else {
+			this->do_cwd(splitVec[1]);
+		}
 	} else {
 		printf("not supported yet");
 	}
@@ -262,10 +273,24 @@ int ServerPI::do_retr(string path) {
 	return result;
 }
 int ServerPI::do_quit() {
-	int len = this->telnetSend(QUIT_MSG);
+	this->telnetSend(QUIT_MSG);
 	close(this->telnetSockfd);
 	this->telnetClosed = true;
 	return 0;
+}
+
+int ServerPI::do_cwd(string path) {
+	if (chroot(path.c_str()) != -1) {
+		this->telnetSend(DIR_CHANGE_OK_MSG);
+		return 0;
+	} else {
+		this->telnetSend(FILE_REQUEST_ERROR_MSG);
+		return -1;
+	}
+}
+
+int ServerPI::do_argError() {
+	return this->telnetSend(ARG_SYNTEX_ERROR_MSG);
 }
 
 void ServerPI::run() {
@@ -285,7 +310,7 @@ void ServerPI::run() {
 			continue;
 		}
 		gettimeofday(&et, NULL);
-		if (et.tv_sec - bt.tv_sec > USER_TIME_OUT_TIMES){
+		if (et.tv_sec - bt.tv_sec > USER_TIME_OUT_TIMES) {
 			printf("user time out\n");
 			close(this->telnetSockfd);
 		}

@@ -33,12 +33,14 @@ private:
 	int telnetRead(char* buffer, int size);
 	//send content using telnet protocol
 	int telnetSend(string content);
+	int do_argError();
 	int do_user();
 	int do_pass();
 	int do_pasv();
 	int do_list();
 	int do_syst();
 	int do_quit();
+	int do_cwd(string path);
 	int do_retr(string path);
 	//execute dir command and return the result in string
 

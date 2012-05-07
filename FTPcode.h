@@ -15,5 +15,7 @@
 #define CANNOT_OPEN_DATA_CONNECTION_MSG "425 Can't open data connection"
 #define DATA_CONNECTION_ERROR_CODE 425
 #define QUIT_MSG "Goodbye. Have a good time"
-
+#define DIR_CHANGE_OK_MSG "250 Directory successfully changed"
+#define FILE_REQUEST_ERROR_MSG "550 File action not taken"
+#define ARG_SYNTEX_ERROR_MSG "501 Syntax error in parameters or arguments"
 #endif /* FTPCODE_H_ */
