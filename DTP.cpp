@@ -6,6 +6,8 @@
  */
 
 #include "DTP.h"
+#include "cache.h"
+
 #include <iostream>
 #include <fstream>
 #include <fcntl.h>
@@ -27,13 +29,6 @@ int DTP::getFile(string localPath) {
 		//file receive successfully
 		printf("get file successfully\n");
 		ofstream fout;
-//		fout.open("./sample3");
-//		if (!fout.write(file, len)) {
-//			printf("write file %s successfully\n", localPath.c_str());
-//		} else {
-//			printf("write file %s error\n", localPath.c_str());
-//		}
-//		fout.close();
 		FILE* f;
 		f = fopen(localPath.c_str(), "w");
 		if (f == NULL) {
@@ -114,10 +109,24 @@ int DTP::sendFile(string path) {
 		printf("file %s not exist\n", path.c_str());
 		return -1;
 	}
-	char* buf = new char[MAX_FILE_SIZE];
+	char buf[MAX_FILE_SIZE];
+	memset(buf, 0, sizeof(buf));
+	CacheEntry entry;
+	entry.buf = new char[MAX_FILE_SIZE];
+	if (cacheGet(path, entry, MAX_FILE_SIZE) == 0) {
+		//get a cache
+		if (sendAll(entry.buf, entry.size) < 0) {
+			printf("send file %s error: %s\n", path.c_str(), strerror(errno));
+			return -1;
+		}
+		return 0;
+	}
+	//not from a cache
 	memset(buf, 0, sizeof(buf));
 	int size = 0;
+	int readTimes = 0;
 	while ((size = read(fd, buf, MAX_FILE_SIZE)) > 0) {
+		readTimes++;
 		if (sendAll(buf, size) < 0) {
 			printf("send file %s error: %s\n", path.c_str(), strerror(errno));
 			return -1;
@@ -127,7 +136,10 @@ int DTP::sendFile(string path) {
 		printf("read file %s error: %s\n", path.c_str(), strerror(errno));
 		return -1;
 	}
-
+	if (readTimes == 1){
+		//small file, should cache
+		cacheAdd(path, buf, size);
+	}
 	return 0;
 }
 

@@ -31,14 +31,6 @@ int UserPI::do_retr(string remotePath, string localPath) {
 	memset(buffer, 0, sizeof(buffer));
 	//TODO: activate mode will be supported in alpha 2.0
 	this->do_pasv();
-	int len;
-	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
-		//do nothing, just keep reading
-	}
-	if (len < 0) {
-		return -1;
-	}
-	printf("%s\n", buffer);
 	string content = "RETR ";
 	content = content + remotePath;
 	if (this->telnetSend(content)) {
@@ -48,13 +40,6 @@ int UserPI::do_retr(string remotePath, string localPath) {
 	if (this->dtp.getFile(localPath)) {
 		return -1;
 	}
-	while ((len = this->telnetRead(buffer, MAX_TELNET_REPLY)) == 0) {
-		//do nothing, keep reading
-	}
-	if (len < 0) {
-		return -1;
-	}
-	printf("%s\n", buffer);
 	return 0;
 }
 
@@ -89,6 +74,7 @@ int UserPI::telnetSend(string content) {
 		printf("telnet send error\n");
 		return -1;
 	}
+	printf("Client Send: %s\n", content.c_str());
 	return 0;
 }
 
