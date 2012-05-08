@@ -186,25 +186,26 @@ int ServerPI::do_list() {
 }
 
 string ServerPI::dir() {
-//	string cmd = "ls -l";
-//	FILE* result = popen(cmd.c_str(), "r");
-//	char buf[MAX_TELNET_REPLY];
-//	memset(buf, 0, sizeof(buf));
-//	long maxl = MAX_TELNET_REPLY;
-//	fread(buf, 1, maxl, result);
-//	string r = buf;
+	string cmd = "ls -l";
+	FILE* result = popen(cmd.c_str(), "r");
+	char buf[MAX_TELNET_REPLY];
+	memset(buf, 0, sizeof(buf));
+	long maxl = MAX_TELNET_REPLY;
+	fread(buf, 1, maxl, result);
+	string r = buf;
+	return r;
 
-	char buf[256];
-	char temp[10];
-	getcwd(buf, 256);
-	int fd[2];
-	pipe(fd);
-	file_list(fd[1], buf, temp);
-	char content[MAX_TELNET_REPLY];
-	read(fd[0], content, MAX_TELNET_REPLY);
-	printf("filelist: %s\n", content);
-	string out = content;
-	return out;
+//	char buf[256];
+//	char temp[10];
+//	getcwd(buf, 256);
+//	int fd[2];
+//	pipe(fd);
+//	file_list(fd[1], buf, temp);
+//	char content[MAX_TELNET_REPLY];
+//	read(fd[0], content, MAX_TELNET_REPLY);
+//	printf("filelist: %s\n", content);
+//	string out = content;
+//	return out;
 }
 
 ServerPI::ServerPI(int listenSockfd, boost::mutex* listenMutex) {
@@ -313,7 +314,7 @@ int ServerPI::do_quit() {
 }
 
 int ServerPI::do_cwd(string path) {
-	if (chroot(path.c_str()) != -1) {
+	if (chdir(path.c_str()) != -1) {
 		this->telnetSend(DIR_CHANGE_OK_MSG);
 		return 0;
 	} else {

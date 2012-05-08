@@ -336,6 +336,11 @@ UserPI::UserPI() {
 	this->transferSockfd = -1;
 }
 
+int UserPI::do_cwd(string path)
+{
+	this->telnetSend("CWD " + path);
+}
+
 UserPI::~UserPI() {
 	if (!this->isClosed) {
 		do_close();

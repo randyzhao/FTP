@@ -122,6 +122,9 @@ void UI::run() {
 		case CommandType_Exit:
 			handleExitCmd(cmd);
 			break;
+		case CommandType_Cd:
+			handleCdCmd(cmd);
+			break;
 		default:
 			//printf("commnd %s is not supported yet\n", cmdInput.c_str());
 			this->userPI.telnetSend(cmdInput);
@@ -134,6 +137,11 @@ int UI::handleExitCmd(Command exitCmd)
 {
 	this->userPI.do_close();
 	return 0;
+}
+
+int UI::handleCdCmd(Command cdCmd)
+{
+	this->userPI.do_cwd(cdCmd.getArg(0));
 }
 
 UI::UI() {

@@ -42,6 +42,7 @@ public:
 	int do_user(string name);
 	int do_pass(string pwd);
 	int do_syst();
+	int do_cwd(string path);
 	int do_list(string remotePath);
 	int do_open(string addr, int port);
 	int do_close();
