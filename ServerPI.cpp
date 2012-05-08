@@ -49,25 +49,30 @@ int ServerPI::do_pasv(bool isIPV6/* = true */) {
 		return -1;
 
 	}
-	char buf[MAX_TELNET_READ_TIME_US];
+	char buf[MAX_TELNET_REPLY];
 	memset(&buf, 0, sizeof(buf));
-	if (isIPV6){
-	sprintf(buf, "229 Entering extended passive mode (|||%d|).",
-			this->transferListenPort);
-	}else{
+	if (isIPV6) {
+		sprintf(buf, "229 Entering extended passive mode (|||%d|).",
+				this->transferListenPort);
+	} else {
 		//not IPV6
 		int highPort = this->transferListenPort / 256;
 		int lowPort = this->transferListenPort % 256;
-		char buf[100];
 		inet_ntop(AF_INET, &status.remoteAddr, buf, sizeof(buf));
 		vector<string> temp;
 		string addr = buf;
-		boost::split(temp, addr, boost::is_any_of("."), boost::algorithm::token_compress_on);
-		sprintf(buf, "229 Entering passive mode (%s,%s,%s,%s,%d,%d)",
-				temp[0].c_str(), temp[1].c_str(), temp[2].c_str(), temp[3].c_str(), highPort, lowPort);
+		boost::split(temp, addr, boost::is_any_of("."),
+				boost::algorithm::token_compress_on);
+		//printf("addr is %s\n", buf);
+		memset(buf, 0, sizeof(buf));
+		sprintf(buf, "229 Entering passive mode (%s,%s,%s,%s,%d,%d).",
+				temp[0].c_str(), temp[1].c_str(), temp[2].c_str(),
+				temp[3].c_str(), highPort, lowPort);
 	}
 	this->inPassive = true;
 	string content = buf;
+	printf("msg is %s\n", content.c_str());
+
 	return this->telnetSend(content);
 }
 
@@ -251,7 +256,7 @@ void ServerPI::requestDispacher(string cmd) {
 	} else if (type == "PASS") {
 		this->do_pass();
 	} else if (type == "EPSV" || type == "PASV") {
-		this->do_pasv( type == "EPSV");
+		this->do_pasv(type == "EPSV");
 	} else if (type == "LIST") {
 		this->do_list();
 	} else if (type == "SYST") {

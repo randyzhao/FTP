@@ -141,11 +141,12 @@ int UserPI::do_port() {
 }
 
 int UserPI::do_pasv() {
-	if (this->status.isIPV6) {
-		this->telnetSend("EPSV");
-	} else {
-		this->telnetSend("PASV");
-	}
+//	if (this->status.isIPV6) {
+//		this->telnetSend("EPSV");
+//	} else {
+//		this->telnetSend("PASV");
+//	}
+	this->telnetSend("EPSV");
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));
 	int len;
