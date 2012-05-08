@@ -8,6 +8,9 @@
 #ifndef HELPERS_H_
 #define HELPERS_H_
 #include <stdio.h>
+#include <sys/socket.h>
+       #include <netinet/in.h>
+#include <sys/types.h>
 #include <string>
 using namespace std;
 
@@ -18,9 +21,24 @@ extern int extractCode(char* buf);
 extern string generateMsg(int code, string content);
 
 class ConnectionStatus{
+public:
 	bool isIPV6;
-	int localPort;
+	in6_addr remoteAddr;
 	int remotePort;
+public:
+	ConnectionStatus(){
+		isIPV6 = false;
+		remotePort = -1;
+	}
+	void setStatus(sockaddr_in6 addr){
+		if (addr.sin6_family == AF_INET6){
+			this->isIPV6 = true;
+		}else{
+			this->isIPV6 = false;
+		}
 
+		remoteAddr = addr.sin6_addr;
+		remotePort = ntohs(addr.sin6_port);
+	}
 };
 #endif /* HELPERS_H_ */

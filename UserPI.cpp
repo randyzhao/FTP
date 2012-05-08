@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <cstring>
+#include <arpa/inet.h>
 #include <boost/regex.hpp>
 
 #include "UserPI.h"
@@ -56,7 +57,6 @@ int UserPI::do_retr(string remotePath, string localPath) {
 	printf("%s\n", buffer);
 	return 0;
 }
-
 
 int UserPI::do_list(string remotePath) {
 	//this->listenTransferConnection();
@@ -141,8 +141,11 @@ int UserPI::do_port() {
 }
 
 int UserPI::do_pasv() {
-	//TODO: now only support epsv in ipv6
-	this->telnetSend("EPSV");
+	if (this->status.isIPV6) {
+		this->telnetSend("EPSV");
+	} else {
+		this->telnetSend("PASV");
+	}
 	char buffer[MAX_TELNET_REPLY];
 	memset(buffer, 0, sizeof(buffer));
 	int len;
@@ -253,6 +256,15 @@ int UserPI::do_open(string addr, int port) {
 		this->telnetSockfd = s;
 		this->servAddr = addr;
 		this->isClosed = false;
+		if (res->ai_protocol == AF_INET) {
+			sin6.sin6_family = AF_INET;
+			inet_pton(AF_INET, addr.c_str(), (void*) &sin6.sin6_addr);
+		} else {
+			sin6.sin6_family = AF_INET6;
+			inet_pton(AF_INET6, addr.c_str(), (void*) &sin6.sin6_addr);
+		}
+		sin6.sin6_port = htons(port);
+		status.setStatus(sin6);
 		if (!this->initUser()) {
 			return 0;
 		} else {

@@ -10,6 +10,7 @@
 
 #include <string>
 #include <netdb.h>
+#include "helpers.h"
 #include "DTP.h"
 using namespace std;
 
@@ -17,6 +18,7 @@ using namespace std;
 
 class UserPI {
 private:
+	ConnectionStatus status;
 	struct sockaddr_storage serverAddr;
 	int telnetSockfd;
 	int transferSockfd;
@@ -34,7 +36,6 @@ public:
 	int do_pasv();
 	//set port for server to connectnc
 	//PORT in ipv4 and EPRT in ipv6
-	//TODO: now only support ipv6 eprt
 	int do_port();
 	//retrive file from remote
 	int do_retr(string remotePath, string localPath);

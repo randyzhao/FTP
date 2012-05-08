@@ -18,4 +18,5 @@
 #define DIR_CHANGE_OK_MSG "250 Directory successfully changed"
 #define FILE_REQUEST_ERROR_MSG "550 File action not taken"
 #define ARG_SYNTEX_ERROR_MSG "501 Syntax error in parameters or arguments"
+#define ILLEGAL_COMMAND_MSG "500 Illegal command."
 #endif /* FTPCODE_H_ */

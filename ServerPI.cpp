@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
@@ -42,7 +43,7 @@ int ServerPI::do_pass() {
 	return 0;
 }
 
-int ServerPI::do_pasv() {
+int ServerPI::do_pasv(bool isIPV6/* = true */) {
 	if (this->listenTransferPort()) {
 		printf("listen transferport error\n");
 		return -1;
@@ -50,8 +51,21 @@ int ServerPI::do_pasv() {
 	}
 	char buf[MAX_TELNET_READ_TIME_US];
 	memset(&buf, 0, sizeof(buf));
+	if (isIPV6){
 	sprintf(buf, "229 Entering extended passive mode (|||%d|).",
 			this->transferListenPort);
+	}else{
+		//not IPV6
+		int highPort = this->transferListenPort / 256;
+		int lowPort = this->transferListenPort % 256;
+		char buf[100];
+		inet_ntop(AF_INET, &status.remoteAddr, buf, sizeof(buf));
+		vector<string> temp;
+		string addr = buf;
+		boost::split(temp, addr, boost::is_any_of("."), boost::algorithm::token_compress_on);
+		sprintf(buf, "229 Entering passive mode (%s,%s,%s,%s,%d,%d)",
+				temp[0].c_str(), temp[1].c_str(), temp[2].c_str(), temp[3].c_str(), highPort, lowPort);
+	}
 	this->inPassive = true;
 	string content = buf;
 	return this->telnetSend(content);
@@ -200,6 +214,7 @@ void ServerPI::begin() {
 	for (;;) { //thread should always be running
 
 		struct sockaddr_in6 sin6_accept;
+		memset(&sin6_accept, 0, sizeof(sin6_accept));
 		socklen_t sin6_len = sizeof(sin6_accept);
 		int sock;
 		//try to accept
@@ -217,6 +232,7 @@ void ServerPI::begin() {
 						sizeof(hbuf), NULL, 0, NI_NUMERICHOST);
 				printf("accepPt a connection from %s\n", hbuf);
 				this->telnetSockfd = sock;
+				status.setStatus(sin6_accept);
 				break;
 			}
 
@@ -234,8 +250,8 @@ void ServerPI::requestDispacher(string cmd) {
 		this->do_user();
 	} else if (type == "PASS") {
 		this->do_pass();
-	} else if (type == "EPSV") { //TODO: only support ipv6. Should support PASV also
-		this->do_pasv();
+	} else if (type == "EPSV" || type == "PASV") {
+		this->do_pasv( type == "EPSV");
 	} else if (type == "LIST") {
 		this->do_list();
 	} else if (type == "SYST") {

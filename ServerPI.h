@@ -10,13 +10,14 @@
 #include <string>
 #include <boost/thread/mutex.hpp>
 #include "DTP.h"
+#include "helpers.h"
 using namespace std;
 
 class ServerPI{
 private:
 	boost::mutex* listenMutex;
 	DTP dtp;
-
+	ConnectionStatus status;
 	bool fatalError;
 	bool telnetClosed;
 	//the service is in passive mode and ready for connect
@@ -36,7 +37,7 @@ private:
 	int do_argError();
 	int do_user();
 	int do_pass();
-	int do_pasv();
+	int do_pasv(bool isIPV6 = true);
 	int do_list();
 	int do_syst();
 	int do_quit();
