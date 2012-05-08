@@ -18,7 +18,8 @@ enum CommandType{
 	CommandType_Exit,
 	CommandType_Open,
 	CommandType_Dir,
-	CommandType_Error
+	CommandType_Error,
+	CommandType_Cd
 };
 
 class Command

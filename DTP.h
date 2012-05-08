@@ -25,6 +25,8 @@ public:
 	void setSockfd(int sockfd);
 	//send a msg
 	void sendMsg(string content);
+	//send all the data in a buf
+	int sendAll(char* buf, int len);
 	int sendFile(string path);
 };
 

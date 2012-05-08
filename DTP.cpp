@@ -19,6 +19,7 @@ using namespace std;
 #define RECV_BUFFER_LEN 10000
 #define RECEVIE_TIME_LIMIT 20
 #define MAX_FILE_SIZE 1000000
+#define MAX_SEND_SIZE 10000
 int DTP::getFile(string localPath) {
 	char* file = new char[RECV_BUFFER_LEN];
 	int len;
@@ -63,7 +64,7 @@ int DTP::getFile(char *file) {
 (	true) { //not finish yet
 		memset(recvbuf, 0, sizeof(recvbuf));
 		int recvLen = read(sockfd, recvbuf, RECV_BUFFER_LEN);
-		if (recvLen <= 0){
+		if (recvLen <= 0) {
 			break;
 		}
 		//receive successful
@@ -95,28 +96,38 @@ void DTP::sendMsg(string content) {
 	}
 }
 
-int DTP::sendFile(string path)
-{
+int DTP::sendAll(char *buf, int len) {
+	int totalSend = 0;
+	while (totalSend < len) {
+		int tempSend = write(this->sockfd, buf + totalSend, len - totalSend);
+		if (tempSend < 0) {
+			return -1;
+		}
+		totalSend += tempSend;
+	}
+	return 0;
+}
+
+int DTP::sendFile(string path) {
 	int fd = open(path.c_str(), O_RDONLY);
-	if (fd == -1){
+	if (fd == -1) {
 		printf("file %s not exist\n", path.c_str());
 		return -1;
 	}
 	char* buf = new char[MAX_FILE_SIZE];
 	memset(buf, 0, sizeof(buf));
-	int size = read(fd, buf, MAX_FILE_SIZE);
-	if (size <= 0){
-		printf("send file %s error: %s\n", path.c_str(), strerror(errno));
-		return 1;
+	int size = 0;
+	while ((size = read(fd, buf, MAX_FILE_SIZE)) > 0) {
+		if (sendAll(buf, size) < 0) {
+			printf("send file %s error: %s\n", path.c_str(), strerror(errno));
+			return -1;
+		}
 	}
-	int len = write(this->sockfd, buf, size);
-	if (len < 0) {
-		printf("socket error: %s\n", strerror(errno));
-	} else {
-		printf("send file %s successfully\n", path.c_str());
+	if (size < 0) {
+		printf("read file %s error: %s\n", path.c_str(), strerror(errno));
+		return -1;
 	}
+
 	return 0;
 }
-
-
 
