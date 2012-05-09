@@ -46,6 +46,7 @@ public:
 	int do_list(string remotePath);
 	int do_open(string addr, int port);
 	int do_close();
+	int do_stor(string pathName);
 	int initUser();
 	void setTelnetSockfd(int telnetSockfd);
 	//read message using telnet and store to the buffer
@@ -54,6 +55,8 @@ public:
 	//send content using telnet protocol
 	int telnetSend(string content);
 	void setServdddr(string addr);
+	//get file name from path name
+	string getFileName(string pathName);
 	UserPI();
 	~UserPI();
 };

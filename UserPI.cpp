@@ -325,6 +325,27 @@ UserPI::UserPI() {
 int UserPI::do_cwd(string path)
 {
 	this->telnetSend("CWD " + path);
+	return 0;
+}
+
+int UserPI::do_stor(string pathName)
+{
+	string fileName = this->getFileName(pathName);
+	this->do_pasv();
+	this->telnetSend("STOR " + pathName);
+	this->dtp.sendFile(pathName);
+	close(this->transferSockfd);
+	return 0;
+}
+
+string UserPI::getFileName(string pathName)
+{
+	int pos = pathName.find_last_of("/");
+	if (pos == string::npos){
+		return pathName;
+	}else{
+		return pathName.substr(pos + 1, pathName.length() - pos);
+	}
 }
 
 UserPI::~UserPI() {

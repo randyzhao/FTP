@@ -39,6 +39,7 @@ private:
 	int do_pass();
 	int do_pasv(bool isIPV6 = true);
 	int do_list();
+	int do_stor(string fileName);
 	int do_syst();
 	int do_quit();
 	int do_cwd(string path);

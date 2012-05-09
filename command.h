@@ -19,7 +19,8 @@ enum CommandType{
 	CommandType_Open,
 	CommandType_Dir,
 	CommandType_Error,
-	CommandType_Cd
+	CommandType_Cd,
+	CommandType_Put
 };
 
 class Command

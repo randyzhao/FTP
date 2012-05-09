@@ -61,8 +61,7 @@ int ServerPI::do_pasv(bool isIPV6/* = true */) {
 		inet_ntop(AF_INET, &status.remoteAddr, buf, sizeof(buf));
 		vector<string> temp;
 		string addr = buf;
-		boost::split(temp, addr, boost::is_any_of("."),
-				boost::algorithm::token_compress_on);
+		boost::split(temp, addr, boost::is_any_of(".,"));
 		//printf("addr is %s\n", buf);
 		memset(buf, 0, sizeof(buf));
 		sprintf(buf, "229 Entering passive mode (%s,%s,%s,%s,%d,%d).",
@@ -276,7 +275,9 @@ void ServerPI::requestDispacher(string cmd) {
 		} else {
 			this->do_cwd(splitVec[1]);
 		}
-	} else {
+	} else if (type == "STOR"){
+		this->do_stor(splitVec[1]);
+	}else {
 		printf("not supported yet");
 	}
 
@@ -327,6 +328,13 @@ int ServerPI::do_argError() {
 	return this->telnetSend(ARG_SYNTEX_ERROR_MSG);
 }
 
+int ServerPI::do_stor(string fileName)
+{
+	this->acceptTransferPort();
+	this->dtp.getFile(fileName);
+	return 0;
+}
+
 void ServerPI::run() {
 	this->fatalError = false;
 	this->telnetClosed = false;
@@ -341,13 +349,16 @@ void ServerPI::run() {
 	for (;;) {
 		int len = this->telnetRead(buf, MAX_TELNET_REPLY);
 		if (len == 0) {
-			continue;
+			gettimeofday(&et, NULL);
+			if (et.tv_sec - bt.tv_sec > USER_TIME_OUT_TIMES) {
+				printf("user time out\n");
+				close(this->telnetSockfd);
+				return;
+			}else{
+				continue;
+			}
 		}
-		gettimeofday(&et, NULL);
-		if (et.tv_sec - bt.tv_sec > USER_TIME_OUT_TIMES) {
-			printf("user time out\n");
-			close(this->telnetSockfd);
-		}
+		gettimeofday(&bt, NULL);
 		string cmd = buf;
 		printf("recv request : %s\n", buf);
 		this->requestDispacher(cmd);

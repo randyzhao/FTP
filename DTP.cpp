@@ -20,12 +20,12 @@ using namespace std;
 
 #define RECV_BUFFER_LEN 10000
 #define RECEVIE_TIME_LIMIT 20
-#define MAX_FILE_SIZE 1000000
+#define MAX_FILE_SIZE 10000000
 #define MAX_SEND_SIZE 10000
 int DTP::getFile(string localPath) {
-	char* file = new char[RECV_BUFFER_LEN];
+	char* file = new char[MAX_FILE_SIZE];
 	int len;
-	if ((len = getFile(file)) >= 0) {
+	if ((len = getFile(file)) > 0) {
 		//file receive successfully
 		printf("get file successfully\n");
 		ofstream fout;
@@ -55,8 +55,7 @@ int DTP::getFile(char *file) {
 	struct timeval tv;
 	tv.tv_sec = RECEVIE_TIME_LIMIT;
 	setsockopt(this->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-	char* recvbuf = new char[RECV_BUFFER_LEN + 10];while
-(	true) { //not finish yet
+	char* recvbuf = new char[RECV_BUFFER_LEN + 10];while(true) { //not finish yet
 		memset(recvbuf, 0, sizeof(recvbuf));
 		int recvLen = read(sockfd, recvbuf, RECV_BUFFER_LEN);
 		if (recvLen <= 0) {
@@ -66,10 +65,6 @@ int DTP::getFile(char *file) {
 		recvbuf[recvLen] = 0;
 		char* filePtr = file + totalSize;
 		totalSize += recvLen;
-		if (totalSize > RECV_BUFFER_LEN) {
-			printf("file is too large\n");
-			break;
-		}
 		strncpy(filePtr, recvbuf, recvLen);
 		if (filePtr[totalSize - 1] == EOF) {
 			break;
@@ -109,11 +104,8 @@ int DTP::sendFile(string path) {
 		printf("file %s not exist\n", path.c_str());
 		return -1;
 	}
-	char buf[MAX_FILE_SIZE];
-	memset(buf, 0, sizeof(buf));
 	CacheEntry entry;
-	entry.buf = new char[MAX_FILE_SIZE];
-	if (cacheGet(path, entry, MAX_FILE_SIZE) == 0) {
+	if (cacheGet(path, entry) == 0) {
 		//get a cache
 		if (sendAll(entry.buf, entry.size) < 0) {
 			printf("send file %s error: %s\n", path.c_str(), strerror(errno));
@@ -122,24 +114,32 @@ int DTP::sendFile(string path) {
 		return 0;
 	}
 	//not from a cache
+	char* buf = new char[MAX_FILE_SIZE];
 	memset(buf, 0, sizeof(buf));
+	int totalSize = 0;
 	int size = 0;
 	int readTimes = 0;
 	while ((size = read(fd, buf, MAX_FILE_SIZE)) > 0) {
 		readTimes++;
+		totalSize += size;
 		if (sendAll(buf, size) < 0) {
 			printf("send file %s error: %s\n", path.c_str(), strerror(errno));
+			close(fd);
+			delete buf;
 			return -1;
 		}
 	}
 	if (size < 0) {
 		printf("read file %s error: %s\n", path.c_str(), strerror(errno));
+		close(fd);
+		delete buf;
 		return -1;
 	}
-	if (readTimes == 1){
+	if (readTimes == 1) {
 		//small file, should cache
-		cacheAdd(path, buf, size);
+		cacheAdd(path, buf, totalSize);
 	}
+	close(fd);
 	return 0;
 }
 

@@ -49,16 +49,19 @@ Command CommandParser::parseCommand(string com) {
 		if (splitVec.size() > 1) {
 			cmd.addParam(splitVec[1]);
 		}
-	} else if (splitVec[0] == "close" || splitVec[0] == "exit") {
+	} else if (splitVec[0] == "close" || splitVec[0] == "quit") {
 		cmd.setType(CommandType_Exit);
-	} else if (splitVec[0] == "cd"){
-		if (splitVec.size() < 2){
+	} else if (splitVec[0] == "cd") {
+		if (splitVec.size() < 2) {
 			printf("arguments for open command is too low\n");
-		}else{
+		} else {
 			cmd.setType(CommandType_Cd);
 			cmd.addParam(splitVec[1]);
 		}
-	}else {
+	} else if (splitVec[0] == "put") {
+		cmd.setType(CommandType_Put);
+		cmd.addParam(splitVec[1]);
+	} else {
 		printf("command %s is not supported yet\n", splitVec[0].c_str());
 	}
 	return cmd;
